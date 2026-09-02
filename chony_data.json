@@ -1,0 +1,137 @@
+{
+  "discord_id": "1373371003425783951",
+  "display_name": "chony",
+  "custom_handle": "matchaaas.",
+  "custom_avatar_url": "https://cdn.discordapp.com/avatars/1373371003425783951/a9afded18db5d37d1854cad65ae7b775.png?size=512",
+  "use_discord_status": true,
+  "custom_status": "",
+  "status_emoji": "",
+  "bubble_animation_bundle": "magnetic",
+  "runner_transition": true,
+  "bio": "front end and back end developer, also develop discord bots been a programmer for 2-3 years ",
+  "music_url": "/uploads/1788160248_3f95cce5_Flipp_Dinero_-_Leave_Me_Alone_Audio_-_FlippDineroVEVO.mp3",
+  "music_title": "leave me alone",
+  "music_autoplay": true,
+  "background_url": "",
+  "background_opacity": 100,
+  "accent_color": "#74a7fe",
+  "font_family": "Syne",
+  "custom_font_url": "",
+  "custom_font_name": "",
+  "custom_cursor_url": "",
+  "cursor_size": 32,
+  "hide_system_cursor": true,
+  "links": [
+    {
+      "label": "Discord Server",
+      "url": "https://discord.gg/VCkRxFkQu3",
+      "icon": "discord"
+    },
+    {
+      "label": "Tiktok",
+      "url": "https://tiktok.com/@aviontweaks",
+      "icon": "tiktok"
+    },
+    {
+      "label": "Youtube",
+      "url": "https://www.youtube.com/@AvionTwks",
+      "icon": "youtube"
+    }
+  ],
+  "view_count": 1383,
+  "effects": {
+    "sakura_leaves": false,
+    "typing_animation": true,
+    "particles": true,
+    "tilt_card": true,
+    "cursor_glow": true
+  },
+  "badges": [
+    {
+      "name": "Owner",
+      "icon": "crown",
+      "color": "#f39c12"
+    },
+    {
+      "name": "Developer",
+      "icon": "code",
+      "color": "#3498db"
+    }
+  ],
+  "presets": [
+    {
+      "id": "910DnBbu1Fo",
+      "name": "alt",
+      "created_at": 1788158645,
+      "snapshot": {
+        "discord_id": "1502105514601873428",
+        "display_name": "\ud835\ude96\ud835\ude8a\ud835\ude8c \ud835\ude97 \ud835\ude8c\ud835\ude91\ud835\ude98\ud835\ude97\ud835\udea2",
+        "custom_handle": "7tdt",
+        "custom_avatar_url": "https://cdn.discordapp.com/avatars/1502105514601873428/751b8cd34769103bc3eedc220c2b838a.png?size=512",
+        "use_discord_status": true,
+        "custom_status": "",
+        "status_emoji": "",
+        "bio": "just chilling",
+        "music_url": "/uploads/1788156069_9e958726_Rise__Shine_-_The_Cardigans.mp3",
+        "music_title": "Rise and Shineeee",
+        "music_autoplay": true,
+        "music_volume": 80,
+        "background_url": "",
+        "background_opacity": 100,
+        "bg_color": "#08080a",
+        "accent_color": "#faccce",
+        "font_family": "Inter",
+        "custom_cursor_url": "",
+        "cursor_size": 32,
+        "hide_system_cursor": true,
+        "bubble_animation_bundle": "foam",
+        "links": [
+          {
+            "label": "Discord Server",
+            "url": "https://discord.gg/VCkRxFkQu3",
+            "icon": "discord"
+          },
+          {
+            "label": "Youtube",
+            "url": "https://www.youtube.com/@AvionTwks",
+            "icon": "youtube"
+          },
+          {
+            "label": "Tiktok",
+            "url": "tiktok.com/@aviontweaks",
+            "icon": "tiktok"
+          }
+        ],
+        "effects": {
+          "sakura_leaves": true,
+          "typing_animation": true,
+          "particles": false,
+          "tilt_card": true,
+          "cursor_glow": true
+        },
+        "badges": [
+          {
+            "name": "Owner",
+            "icon": "crown",
+            "color": "#f39c12"
+          },
+          {
+            "name": "Developer",
+            "icon": "code",
+            "color": "#3498db"
+          }
+        ],
+        "card_bg_color": "",
+        "theme_preset": "custom",
+        "custom_font_url": "",
+        "custom_font_name": "",
+        "runner_transition": true
+      },
+      "slug": "alt"
+    }
+  ],
+  "music_volume": 50,
+  "bg_color": "#08080a",
+  "card_bg_color": "",
+  "theme_preset": "custom"
+}

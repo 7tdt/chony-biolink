@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>chony</title>
+  <link rel="icon" href="data:,">
+  
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;600;700&family=Syne:wght@600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style id="cursor-styles">
+    html.hide-system-cursor,
+    html.hide-system-cursor body,
+    html.hide-system-cursor *,
+    html.hide-system-cursor a,
+    html.hide-system-cursor button {
+      cursor: none !important;
+    }
+  </style>
+
+  <style>
+    :root {
+      --accent: #fff2d5;
+      --accent-glow: rgba(255, 242, 213, 0.25);
+      --bg-dark: #08080a;
+      --card-bg: rgba(14, 14, 18, 0.72);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-family: 'Space Grotesk', 'Inter', sans-serif;
+      --cursor-size: 32px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body, button, input, select, textarea,
+    .display-name, .handle-text, .bio-text, .link-item,
+    .nav-link, .project-title, .project-desc, .project-tag,
+    .views-pill, .top-track-pill, .top-name-pill, .entry-prompt {
+      font-family: var(--font-family) !important;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    #customCursorImg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: var(--cursor-size);
+      height: var(--cursor-size);
+      object-fit: contain;
+      pointer-events: none;
+      z-index: 9999999;
+      opacity: 0;
+      will-change: transform;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.6));
+    }
+    #customCursorImg.active { opacity: 1; }
+    #customCursorImg.clicking { transform: translate(-50%, -50%) scale(0.85) !important; }
+    #customCursorImg.hovering { transform: translate(-50%, -50%) scale(1.15) !important; filter: drop-shadow(0 0 10px var(--accent-glow)); }
+
+    .cursor-dot, .cursor-circle {
+      pointer-events: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      border-radius: 50%;
+      z-index: 99999;
+      opacity: 0;
+      will-change: transform;
+    }
+    .cursor-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--accent);
+      transform: translate(-50%, -50%);
+    }
+    .cursor-circle {
+      width: 32px;
+      height: 32px;
+      border: 1.5px solid var(--accent-glow);
+      background: rgba(255, 255, 255, 0.02);
+      transform: translate(-50%, -50%);
+    }
+
+    #bg-media-container {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      overflow: hidden;
+    }
+    #bg-video, #bg-image {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      min-width: 100%;
+      min-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    #bg-overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(8, 8, 10, 0.45) 0%, rgba(5, 5, 8, 0.88) 100%);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 2;
+    }
+
+    #particles-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    #entry-overlay {
+      position: fixed;
+      inset: 0;
+      background: #040508;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;
+    }
+    #entry-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .entry-prompt {
+      font-size: 1.15rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.72);
+      letter-spacing: 4px;
+      text-transform: lowercase;
+      animation: pulsePrompt 2.2s infinite ease-in-out;
+    }
+    @keyframes pulsePrompt {
+      0%, 100% { opacity: 0.35; transform: scale(0.98); }
+      50% { opacity: 0.95; transform: scale(1.02); }
+    }
+
+    
+    .preset-menu-wrap {
+      position: relative;
+      display: inline-block;
+    }
+    .preset-pill {
+      cursor: pointer;
+      user-select: none;
+    }
+    .preset-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%) translateY(-6px);
+      background: rgba(14, 16, 24, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 8px;
+      min-width: 210px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 100;
+    }
+    .preset-dropdown.open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+    .preset-dropdown-header {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 4px 8px 6px;
+    }
+    .preset-item-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 7px 10px;
+      border: none;
+      background: transparent;
+      color: #e2e8f0;
+      font-size: 0.82rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      text-align: left;
+    }
+    .preset-item-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+    .preset-item-btn.active {
+      background: rgba(212, 184, 150, 0.15);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .preset-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      margin: 6px 0;
+    }
+    .preset-action-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      width: 100%;
+      padding: 6px 10px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+    .preset-action-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--accent);
+    }
+
+    .top-bar-container {
+      position: fixed;
+      top: 1.4rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      max-width: 90vw;
+      pointer-events: auto;
+    }
+    .top-track-pill {
+      display: none;
+      align-items: center;
+      gap: 9px;
+      background: rgba(14, 16, 24, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 5px 14px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #e2e8f0;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+      transition: border-color 0.2s;
+    }
+    .top-track-pill:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .disc-icon {
+      font-size: 0.95rem;
+      color: var(--accent);
+      animation: spinDisc 4s linear infinite paused;
+    }
+    .disc-icon.playing { animation-play-state: running; }
+    @keyframes spinDisc {
+      100% { transform: rotate(360deg); }
+    }
+    .top-track-title {
+      max-width: 140px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .visualizer-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 12px;
+    }
+    .vbar {
+      width: 2.5px;
+      height: 3px;
+      background: var(--accent);
+      border-radius: 1px;
+    }
+    .vbar.anim {
+      animation: vbarWave 0.8s ease-in-out infinite alternate;
+    }
+    .vbar:nth-child(1) { animation-delay: 0.1s; }
+    .vbar:nth-child(2) { animation-delay: 0.3s; }
+    .vbar:nth-child(3) { animation-delay: 0.2s; }
+    .vbar:nth-child(4) { animation-delay: 0.4s; }
+    @keyframes vbarWave {
+      0% { height: 3px; }
+      100% { height: 12px; }
+    }
+    .top-play-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px;
+      transition: color 0.15s;
+    }
+    .top-play-btn:hover { color: var(--accent); }
+
+    .views-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(14, 16, 24, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 5px 14px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      letter-spacing: 0.4px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.4);
+    }
+    .views-pill:hover {
+      color: var(--text-main);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .views-pill i { font-size: 0.72rem; color: var(--accent); }
+
+    .volume-control {
+      position: fixed;
+      bottom: 1.8rem;
+      left: 2rem;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      opacity: 0.55;
+      transition: opacity 0.2s;
+    }
+    .volume-control:hover { opacity: 1; }
+
+    #vol-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      position: relative;
+      z-index: 2;
+    }
+    #vol-btn svg { width: 22px; height: 22px; }
+
+    #vol-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 0;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+      margin-left: 0;
+      opacity: 0;
+      transition: width 0.25s ease, opacity 0.2s ease, margin-left 0.25s ease;
+    }
+    .volume-control:hover #vol-slider {
+      width: 75px;
+      margin-left: 0.6rem;
+      opacity: 1;
+    }
+    #vol-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    #vol-slider::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+    .scene {
+      perspective: 1400px;
+      z-index: 10;
+      padding: 20px;
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: auto;
+    }
+
+    .page-view {
+      width: 100%;
+      display: none;
+      opacity: 0;
+      transform: translateY(35px) scale(0.92) rotateX(8deg);
+      filter: blur(10px);
+      transform-origin: center bottom;
+      transition: opacity 0.5s ease, transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease;
+    }
+    .page-view.active {
+      display: flex;
+      flex-direction: column;
+      opacity: 1;
+      transform: none;
+      filter: blur(0);
+    }
+
+    .profile-card {
+      width: 100%;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      padding: 10px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+    }
+
+    .avatar-thought-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 110px;
+      margin-top: -4px;
+    }
+    .avatar-wrapper {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      cursor: pointer;
+      z-index: 2;
+      transition: transform 0.25s ease;
+    }
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #1e2028;
+      box-shadow: 0 0 24px var(--accent-glow), 0 8px 22px rgba(0,0,0,0.6);
+      transition: transform 0.25s ease;
+    }
+    .avatar-wrapper:hover .avatar-img { transform: scale(1.04); }
+
+    .status-indicator {
+      position: absolute;
+      bottom: 2px;
+      right: 3px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 4px solid #0f1016;
+      background: #747f8d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s ease;
+    }
+    .status-online { background: #22c55a; }
+    .status-idle { background: #f0b232; }
+    .status-dnd { background: #f23f43; }
+    .status-dnd::after {
+      content: '';
+      width: 9px;
+      height: 2.5px;
+      background: #ffffff;
+      border-radius: 2px;
+    }
+    .status-offline { background: #80848e; }
+
+    .discord-bubble-wrapper {
+      position: absolute;
+      left: calc(50% + 44px);
+      top: 12px;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      z-index: 10;
+      transition: all 0.25s ease;
+    }
+    .bubble-connector-dot {
+      width: 10px;
+      height: 10px;
+      background: #252830;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
+    }
+    .discord-thought-bubble {
+      background: #252830;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 6px 13px;
+      font-size: 0.84rem;
+      font-weight: 500;
+      color: #e2e8f0;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      white-space: nowrap;
+      max-width: 210px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .bundle-classic { animation: classicFloat 3.6s infinite ease-in-out; }
+    @keyframes classicFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .user-info {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      width: 100%;
+    }
+    .name-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .display-name {
+      font-size: 1.9rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--text-main);
+      display: inline-flex;
+      align-items: center;
+    }
+    .badges-container {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.78rem;
+    }
+
+    .handle-text {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      font-weight: 400;
+      letter-spacing: 0.4px;
+    }
+    .bio-text {
+      font-size: 0.92rem;
+      color: #cbd5e1;
+      line-height: 1.5;
+      text-align: center;
+      max-width: 380px;
+      margin-top: 4px;
+      font-weight: 300;
+    }
+
+    .spotify-card {
+      display: none;
+      width: 100%;
+      background: rgba(18, 22, 32, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 10px 14px;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.2s ease;
+    }
+    .spotify-card:hover {
+      border-color: rgba(30, 215, 96, 0.35);
+      background: rgba(18, 24, 34, 0.85);
+    }
+    .spotify-art {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .spotify-details {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+      flex: 1;
+    }
+    .spotify-header {
+      font-size: 0.7rem;
+      color: #1ed760;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .spotify-song {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .spotify-artist {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+        .links-list {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 16px 22px;
+      width: 100%;
+      margin-top: 8px;
+    }
+    .link-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 6px 10px;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.92rem;
+      font-weight: 500;
+      transition: color 0.2s ease, transform 0.2s ease;
+      cursor: pointer;
+    }
+    .link-item:hover {
+      color: #ffffff;
+      transform: translateY(-2px);
+    }
+    .link-item:hover .link-icon {
+      color: #ffffff;
+      filter: drop-shadow(0 0 8px var(--accent-glow));
+    }
+    .link-icon {
+      font-size: 1rem;
+      color: var(--accent);
+    }
+
+    .projects-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      width: 100%;
+      perspective: 1400px;
+    }
+    .project-card {
+      position: relative;
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 1.1rem 1.3rem;
+      background: rgba(14, 16, 24, 0.72);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      overflow: hidden;
+    }
+    .project-card:hover {
+      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(18, 22, 34, 0.85);
+      transform: translateY(-3px);
+    }
+    .project-cta {
+      position: absolute;
+      top: 1rem;
+      right: 1.2rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: color 0.2s, gap 0.2s;
+    }
+    .project-card:hover .project-cta {
+      color: var(--accent);
+      gap: 0.5rem;
+    }
+    .project-cta svg { width: 12px; height: 12px; }
+
+    .project-title {
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      margin-bottom: 0.35rem;
+      padding-right: 6rem;
+    }
+    .project-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+      font-weight: 300;
+    }
+    .project-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-top: 0.6rem;
+    }
+    .project-tag {
+      font-size: 0.66rem;
+      padding: 0.18rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      background: rgba(255, 255, 255, 0.03);
+      color: #cbd5e1;
+      letter-spacing: 0.3px;
+    }
+
+    #navbar {
+      position: fixed;
+      bottom: 1.8rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      background: rgba(14, 16, 24, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 999px;
+      padding: 0.28rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    .nav-links {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
+    }
+    .nav-indicator {
+      position: absolute;
+      top: 0.15rem;
+      bottom: 0.15rem;
+      left: 0.15rem;
+      width: 0;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+    .nav-link {
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.82rem;
+      letter-spacing: 0.8px;
+      padding: 0.45rem 1.3rem;
+      border-radius: 999px;
+      opacity: 0.45;
+      transition: opacity 0.25s;
+      font-weight: 500;
+      position: relative;
+      z-index: 1;
+    }
+    .nav-link:hover { opacity: 0.75; }
+    .nav-link.active { opacity: 1; }
+
+    #customTooltip {
+      position: fixed;
+      z-index: 999999;
+      background: rgba(14, 16, 24, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      padding: 5px 11px;
+      border-radius: 8px;
+      font-size: 0.76rem;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      white-space: nowrap;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    #customTooltip.visible { opacity: 1; }
+
+    @media (max-width: 600px) {
+      .scene { padding: 12px; }
+      .display-name { font-size: 1.6rem; }
+      .volume-control { bottom: 1.2rem; left: 1rem; }
+      
+    .preset-menu-wrap {
+      position: relative;
+      display: inline-block;
+    }
+    .preset-pill {
+      cursor: pointer;
+      user-select: none;
+    }
+    .preset-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%) translateY(-6px);
+      background: rgba(14, 16, 24, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 8px;
+      min-width: 210px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 100;
+    }
+    .preset-dropdown.open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+    .preset-dropdown-header {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 4px 8px 6px;
+    }
+    .preset-item-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 7px 10px;
+      border: none;
+      background: transparent;
+      color: #e2e8f0;
+      font-size: 0.82rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      text-align: left;
+    }
+    .preset-item-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+    .preset-item-btn.active {
+      background: rgba(212, 184, 150, 0.15);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .preset-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      margin: 6px 0;
+    }
+    .preset-action-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      width: 100%;
+      padding: 6px 10px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+    .preset-action-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--accent);
+    }
+
+    .top-bar-container { top: 1rem; gap: 6px; }
+      .top-track-title { max-width: 90px; }
+    }
+  </style>
+</head>
+<body class="hide-system-cursor">
+
+  <div id="customTooltip"></div>
+  <img id="customCursorImg" src="" alt="cursor" style="display: none;">
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-circle" id="cursorCircle"></div>
+
+  <div id="bg-media-container">
+    <img id="bg-image" alt="background">
+    <video id="bg-video" loop muted playsinline></video>
+    <div id="bg-overlay"></div>
+  </div>
+
+  <canvas id="particles-canvas"></canvas>
+
+  <div id="entry-overlay">
+    <div class="entry-prompt">click to enter...</div>
+  </div>
+
+  <audio id="audio-player" preload="auto"></audio>
+
+  <div class="top-bar-container">
+    <div class="preset-menu-wrap" id="presetMenuWrap">
+      <div class="views-pill preset-pill" id="presetPillBtn" data-tooltip="Switch or Preview Preset">
+        <i class="fa-solid fa-layer-group"></i>
+        <span id="activePresetLabel">Main</span>
+        <i class="fa-solid fa-chevron-down" style="font-size: 0.6rem; opacity: 0.6; margin-left: 2px;"></i>
+      </div>
+      <div class="preset-dropdown" id="presetDropdown">
+        <div class="preset-dropdown-header">Select Preset</div>
+        <div id="presetItemsList" class="preset-items-list"></div>
+        <div id="presetAdminActions" class="preset-admin-actions" style="display: none;">
+          <div class="preset-divider"></div>
+          <button class="preset-action-btn" onclick="saveNewPresetFromPage()"><i class="fa-solid fa-plus"></i> Save New Preset</button>
+          <button class="preset-action-btn" onclick="saveCurrentPresetFromPage()"><i class="fa-solid fa-floppy-disk"></i> Save to This Preset</button>
+          <button class="preset-action-btn" onclick="applyCurrentPresetFromPage()"><i class="fa-solid fa-check"></i> Apply to Main Site</button>
+          <a class="preset-action-btn" href="/panel" target="_blank"><i class="fa-solid fa-gear"></i> Admin Panel</a>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="top-track-pill" id="topTrackPill" data-tooltip="Audio Track">
+      <i id="topDiscIcon" class="fa-solid fa-compact-disc disc-icon"></i>
+      <span id="topTrackTitle" class="top-track-title">Audio Track</span>
+      <div class="visualizer-bars" id="topVizBars">
+        <div class="vbar"></div>
+        <div class="vbar"></div>
+        <div class="vbar"></div>
+        <div class="vbar"></div>
+      </div>
+      <button id="topPlayBtn" class="top-play-btn" aria-label="Toggle Play">
+        <i id="topPlayIcon" class="fa-solid fa-play"></i>
+      </button>
+    </div>
+
+    <div class="views-pill" id="viewsPill" data-tooltip="Total Visitors">
+      <i class="fa-solid fa-eye"></i>
+      <span id="viewCount">0 views</span>
+    </div>
+  </div>
+
+  <div class="volume-control">
+    <button id="vol-btn" aria-label="Toggle Mute">
+      <svg id="vol-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+        <path class="vol-wave" d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        <path class="vol-wave" d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+      </svg>
+    </button>
+    <input type="range" id="vol-slider" min="0" max="1" step="0.01" value="0.35">
+  </div>
+
+  <main class="scene">
+
+    <div id="page-home" class="page-view active">
+      <div class="profile-card" id="profileCard">
+
+        <div class="avatar-thought-container">
+          <div class="avatar-wrapper" id="avatarWrapper" data-tooltip="Discord Avatar">
+            <img id="avatarImg" class="avatar-img" src="" alt="avatar">
+            <div id="statusIndicator" class="status-indicator status-offline"></div>
+          </div>
+
+          <div id="statusBubbleWrap" class="discord-bubble-wrapper bundle-classic">
+            <div class="bubble-connector-dot"></div>
+            <div id="statusBadge" class="discord-thought-bubble" data-tooltip="Custom Status">
+              <span id="statusEmoji" class="status-bubble-emoji"></span>
+              <span id="statusText"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="user-info">
+          <div class="name-row">
+            <h1 id="displayName" class="display-name">
+              <span id="nameText">chony</span>
+            </h1>
+            <div id="badgesContainer" class="badges-container"></div>
+          </div>
+          <div id="handleText" class="handle-text">@matchaaas.</div>
+        </div>
+
+        <div id="bioText" class="bio-text"></div>
+
+        <div id="spotifyCard" class="spotify-card" data-tooltip="Listening on Spotify">
+          <img id="spotifyArt" class="spotify-art" src="" alt="Spotify Art">
+          <div class="spotify-details">
+            <div class="spotify-header"><i class="fa-brands fa-spotify"></i> Listening to Spotify</div>
+            <span id="spotifySong" class="spotify-song">Song Name</span>
+            <span id="spotifyArtist" class="spotify-artist">Artist</span>
+          </div>
+        </div>
+
+        <div id="linksList" class="links-list"></div>
+
+      </div>
+    </div>
+
+    <div id="page-projects" class="page-view">
+      <div class="projects-grid">
+
+        <a class="project-card" href="https://getavion.store" target="_blank" rel="noopener noreferrer">
+          <div class="project-title">Avion Store</div>
+          <div class="project-desc">Full digital storefront and licensing suite with crypto checkouts and Discord bot auto-roles</div>
+          <div class="project-tags">
+            <span class="project-tag">API</span>
+            <span class="project-tag">discord.js</span>
+            <span class="project-tag">express</span>
+            <span class="project-tag">sqlite3</span>
+          </div>
+          <span class="project-cta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Visit site
+          </span>
+        </a>
+
+        <a class="project-card" href="https://github.com/7tdt/chony-biolink" target="_blank" rel="noopener noreferrer">
+          <div class="project-title">chony.info</div>
+          <div class="project-desc">Custom guns.lol style biolink platform with web admin dashboard and media upload engine</div>
+          <div class="project-tags">
+            <span class="project-tag">python</span>
+            <span class="project-tag">flask</span>
+            <span class="project-tag">audio engine</span>
+            <span class="project-tag">vanilla js</span>
+          </div>
+          <span class="project-cta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            View code
+          </span>
+        </a>
+
+        <a class="project-card" href="https://klyrai.info" target="_blank" rel="noopener noreferrer">
+          <div class="project-title">Klyra Showcase</div>
+          <div class="project-desc">High-aesthetic luxury dark agency portfolio designed for media showcases</div>
+          <div class="project-tags">
+            <span class="project-tag">node.js</span>
+            <span class="project-tag">express</span>
+            <span class="project-tag">grid</span>
+            <span class="project-tag">responsive</span>
+          </div>
+          <span class="project-cta">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Visit site
+          </span>
+        </a>
+
+        <div class="project-card">
+          <div class="project-title">Private Space Messenger</div>
+          <div class="project-desc">Real-time WebSocket multi-channel messenger with instant sync and token auth</div>
+          <div class="project-tags">
+            <span class="project-tag">fastapi</span>
+            <span class="project-tag">websockets</span>
+            <span class="project-tag">sqlite3</span>
+          </div>
+          <span class="project-cta">
+            Web App
+          </span>
+        </div>
+
+        <div class="project-card">
+          <div class="project-title">Key Whitelist & HWID System</div>
+          <div class="project-desc">Automated licensing daemon with HMAC signatures and Discord buyer role sync</div>
+          <div class="project-tags">
+            <span class="project-tag">python</span>
+            <span class="project-tag">discord.py</span>
+            <span class="project-tag">HMAC-SHA256</span>
+          </div>
+          <span class="project-cta">
+            Security API
+          </span>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <nav id="navbar">
+    <div class="nav-links">
+      <span id="nav-indicator" class="nav-indicator"></span>
+      <a href="#" data-page="home" class="nav-link active">Profile</a>
+      <a href="#" data-page="projects" class="nav-link">Projects</a>
+    </div>
+  </nav>
+
+  <script>
+    let profileData = null;
+    let isEntered = false;
+    let isPlaying = false;
+    let currentVolume = 0.35;
+
+    const audio = document.getElementById('audio-player');
+    const entryOverlay = document.getElementById('entry-overlay');
+    const volSlider = document.getElementById('vol-slider');
+    const volBtn = document.getElementById('vol-btn');
+
+    const iconMap = {
+      'discord': 'fa-brands fa-discord',
+      'youtube': 'fa-brands fa-youtube',
+      'github': 'fa-brands fa-github',
+      'twitter': 'fa-brands fa-x-twitter',
+      'x': 'fa-brands fa-x-twitter',
+      'twitch': 'fa-brands fa-twitch',
+      'tiktok': 'fa-brands fa-tiktok',
+      'telegram': 'fa-brands fa-telegram',
+      'steam': 'fa-brands fa-steam',
+      'spotify': 'fa-brands fa-spotify',
+      'instagram': 'fa-brands fa-instagram',
+      'reddit': 'fa-brands fa-reddit',
+      'roblox': 'fa-solid fa-cube',
+      'globe': 'fa-solid fa-globe',
+      'link': 'fa-solid fa-link'
+    };
+
+    const badgeIconMap = {
+      'check-badge': 'fa-solid fa-circle-check',
+      'crown': 'fa-solid fa-crown',
+      'code': 'fa-solid fa-code',
+      'star': 'fa-solid fa-star',
+      'shield': 'fa-solid fa-shield-halved',
+      'fire': 'fa-solid fa-fire',
+      'bolt': 'fa-solid fa-bolt'
+    };
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    const tooltipEl = document.getElementById('customTooltip');
+    document.addEventListener('mouseover', (e) => {
+      const target = e.target.closest('[data-tooltip]');
+      if (target) {
+        const text = target.getAttribute('data-tooltip');
+        if (text) {
+          tooltipEl.textContent = text;
+          tooltipEl.classList.add('visible');
+        }
+      }
+    });
+    document.addEventListener('mousemove', (e) => {
+      if (tooltipEl.classList.contains('visible')) {
+        const x = e.clientX + 14;
+        const y = e.clientY + 14;
+        tooltipEl.style.left = `${Math.min(x, window.innerWidth - tooltipEl.offsetWidth - 12)}px`;
+        tooltipEl.style.top = `${Math.min(y, window.innerHeight - tooltipEl.offsetHeight - 12)}px`;
+      }
+    });
+    document.addEventListener('mouseout', (e) => {
+      const target = e.target.closest('[data-tooltip]');
+      if (target) {
+        tooltipEl.classList.remove('visible');
+      }
+    });
+
+    const customCursorImg = document.getElementById('customCursorImg');
+    const cursorDot = document.getElementById('cursorDot');
+    const cursorCircle = document.getElementById('cursorCircle');
+
+    document.addEventListener('pointermove', (e) => {
+      const x = e.clientX;
+      const y = e.clientY;
+      if (customCursorImg && customCursorImg.style.display !== 'none') {
+        customCursorImg.style.transform = `translate3d(calc(${x}px - 50%), calc(${y}px - 50%), 0)`;
+        customCursorImg.classList.add('active');
+      } else {
+        cursorDot.style.transform = `translate3d(calc(${x}px - 50%), calc(${y}px - 50%), 0)`;
+        cursorCircle.style.transform = `translate3d(calc(${x}px - 50%), calc(${y}px - 50%), 0)`;
+        cursorDot.style.opacity = '1';
+        cursorCircle.style.opacity = '1';
+      }
+    });
+
+    document.addEventListener('mousedown', () => {
+      customCursorImg.classList.add('clicking');
+    });
+    document.addEventListener('mouseup', () => {
+      customCursorImg.classList.remove('clicking');
+    });
+
+    document.addEventListener('mouseover', (e) => {
+      if (e.target.closest('a, button, input, .link-item, .project-card, .avatar-wrapper')) {
+        customCursorImg.classList.add('hovering');
+      }
+    });
+    document.addEventListener('mouseout', (e) => {
+      if (e.target.closest('a, button, input, .link-item, .project-card, .avatar-wrapper')) {
+        customCursorImg.classList.remove('hovering');
+      }
+    });
+
+    function setVolume(v) {
+      currentVolume = Math.min(Math.max(v, 0), 1);
+      if (audio) audio.volume = currentVolume;
+      updateVolIcon(currentVolume);
+      try {
+        localStorage.setItem('chony_vol', String(currentVolume));
+      } catch {}
+    }
+
+    function updateVolIcon(val) {
+      const waves = document.querySelectorAll('.vol-wave');
+      if (val === 0) {
+        waves[0].style.display = 'none';
+        waves[1].style.display = 'none';
+      } else if (val < 0.5) {
+        waves[0].style.display = 'block';
+        waves[1].style.display = 'none';
+      } else {
+        waves[0].style.display = 'block';
+        waves[1].style.display = 'block';
+      }
+    }
+
+    volSlider.addEventListener('input', function () {
+      setVolume(parseFloat(this.value));
+    });
+
+    volBtn.addEventListener('click', function () {
+      if (currentVolume > 0) {
+        volSlider.value = '0';
+        setVolume(0);
+      } else {
+        volSlider.value = '0.35';
+        setVolume(0.35);
+      }
+    });
+
+    entryOverlay.addEventListener('click', () => {
+      if (isEntered) return;
+      isEntered = true;
+
+      entryOverlay.classList.add('hidden');
+
+      const savedVol = localStorage.getItem('chony_vol');
+      if (savedVol !== null) {
+        const parsed = parseFloat(savedVol);
+        if (!isNaN(parsed)) {
+          currentVolume = parsed;
+          volSlider.value = String(parsed);
+        }
+      }
+      setVolume(currentVolume);
+
+      if (profileData && profileData.music_url) {
+        audio.play().then(() => {
+          isPlaying = true;
+          updateTopPlayState();
+        }).catch(() => {});
+      }
+
+      fetch('/api/view', { method: 'POST' }).then(r => r.json()).then(d => {
+        if (d && d.view_count) {
+          document.getElementById('viewCount').textContent = `${d.view_count.toLocaleString()} views`;
+        }
+      }).catch(() => {});
+    });
+
+    const topPlayBtn = document.getElementById('topPlayBtn');
+    const topPlayIcon = document.getElementById('topPlayIcon');
+    const topDiscIcon = document.getElementById('topDiscIcon');
+    const topVizBars = document.querySelectorAll('#topVizBars .vbar');
+
+    function updateTopPlayState() {
+      if (isPlaying) {
+        topPlayIcon.className = 'fa-solid fa-pause';
+        topDiscIcon.classList.add('playing');
+        topVizBars.forEach(b => b.classList.add('anim'));
+      } else {
+        topPlayIcon.className = 'fa-solid fa-play';
+        topDiscIcon.classList.remove('playing');
+        topVizBars.forEach(b => b.classList.remove('anim'));
+      }
+    }
+
+    if (topPlayBtn) {
+      topPlayBtn.addEventListener('click', () => {
+        if (isPlaying) {
+          audio.pause();
+          isPlaying = false;
+        } else {
+          audio.play();
+          isPlaying = true;
+        }
+        updateTopPlayState();
+      });
+    }
+
+    audio.addEventListener('ended', () => {
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+    });
+
+    function moveIndicator() {
+      const active = document.querySelector('.nav-link.active');
+      const indicator = document.getElementById('nav-indicator');
+      if (!active || !indicator) return;
+      indicator.style.left = `${active.offsetLeft}px`;
+      indicator.style.width = `${active.offsetWidth}px`;
+    }
+
+    function goTo(page) {
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      document.querySelector(`.nav-link[data-page="${page}"]`)?.classList.add('active');
+      document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+      document.getElementById(`page-${page}`)?.classList.add('active');
+      moveIndicator();
+    }
+
+    document.querySelectorAll('.nav-link').forEach(a => {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        goTo(this.dataset.page);
+      });
+    });
+
+        let tabTitleTimer = null;
+    function startTabTypewriter(words) {
+      if (tabTitleTimer) clearTimeout(tabTitleTimer);
+      if (!words || words.length === 0) return;
+
+      const formattedWords = words.map(w => {
+        const clean = String(w).replace(/^@+/, '').trim();
+        return '@' + clean;
+      });
+
+      let wordIndex = 0;
+      let charIndex = 1;
+      let isDeleting = false;
+
+      function tick() {
+        const currentWord = formattedWords[wordIndex] || '@chony';
+
+        if (isDeleting) {
+          charIndex--;
+        } else {
+          charIndex++;
+        }
+
+        charIndex = Math.max(1, Math.min(charIndex, currentWord.length));
+        document.title = currentWord.substring(0, charIndex);
+
+        let delay = isDeleting ? 85 : 150;
+
+        if (!isDeleting && charIndex === currentWord.length) {
+          delay = 2200;
+          isDeleting = true;
+        } else if (isDeleting && charIndex <= 1) {
+          isDeleting = false;
+          wordIndex = (wordIndex + 1) % formattedWords.length;
+          delay = 450;
+        }
+
+        tabTitleTimer = setTimeout(tick, delay);
+      }
+
+      tick();
+    }
+
+    async function loadProfile() {
+      try {
+        const res = await fetch('/api/profile');
+        if (!res.ok) throw new Error('Profile fetch failed');
+        profileData = await res.json();
+        renderProfile(profileData);
+        if (profileData.discord_id) {
+          fetchDiscordPresence(profileData.discord_id);
+          setInterval(() => fetchDiscordPresence(profileData.discord_id), 12000);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderProfile(d) {
+      const siteTitle = d.display_name || d.custom_handle || 'chony';
+      
+
+      if (d.accent_color) {
+        document.documentElement.style.setProperty('--accent', d.accent_color);
+        document.documentElement.style.setProperty('--accent-glow', `${d.accent_color}40`);
+      }
+      if (d.bg_color) {
+        document.documentElement.style.setProperty('--bg-dark', d.bg_color);
+        document.body.style.backgroundColor = d.bg_color;
+      }
+      if (d.card_bg_color) {
+        document.documentElement.style.setProperty('--card-bg', d.card_bg_color);
+      }
+      if (d.font_family) {
+        const fontName = d.font_family.replace(/['"]/g, '');
+        document.documentElement.style.setProperty('--font-family', `"${fontName}", sans-serif`);
+      }
+
+      if (d.hide_system_cursor !== false) {
+        document.documentElement.classList.add('hide-system-cursor');
+      } else {
+        document.documentElement.classList.remove('hide-system-cursor');
+      }
+
+      if (d.custom_cursor_url) {
+        customCursorImg.src = d.custom_cursor_url;
+        customCursorImg.style.display = 'block';
+        const size = d.cursor_size || 32;
+        document.documentElement.style.setProperty('--cursor-size', `${size}px`);
+        cursorDot.style.display = 'none';
+        cursorCircle.style.display = 'none';
+      } else {
+        customCursorImg.style.display = 'none';
+        cursorDot.style.display = 'block';
+        cursorCircle.style.display = 'block';
+      }
+
+      const rawName = d.display_name || d.custom_handle || 'chony';
+      const rawHandle = (d.custom_handle || '').replace(/^@+/, '').trim();
+      const typewriterWords = [rawName || 'chony', rawHandle || 'matchas'];
+      startTabTypewriter(typewriterWords);
+      document.getElementById('nameText').textContent = rawName;
+
+      document.getElementById('handleText').textContent = rawHandle ? `@${rawHandle}` : '';
+
+      const avatarImg = document.getElementById('avatarImg');
+      
+      if (d.custom_avatar_url) {
+        avatarImg.src = d.custom_avatar_url;
+        
+        
+      }
+
+      document.getElementById('bioText').textContent = d.bio || '';
+
+      const badgesContainer = document.getElementById('badgesContainer');
+      badgesContainer.innerHTML = '';
+      if (d.badges && d.badges.length) {
+        d.badges.forEach(b => {
+          const badgeEl = document.createElement('span');
+          badgeEl.className = 'badge-pill';
+          badgeEl.setAttribute('data-tooltip', b.name || 'Badge');
+          const iconClass = badgeIconMap[b.icon] || 'fa-solid fa-star';
+          badgeEl.innerHTML = `<i class="${iconClass}" style="color: ${b.color || 'var(--accent)'}"></i>`;
+          badgesContainer.appendChild(badgeEl);
+        });
+      }
+
+      if (d.background_url) {
+        const bgUrl = d.background_url;
+        const isVideo = bgUrl.endsWith('.mp4') || bgUrl.endsWith('.webm') || bgUrl.endsWith('.mov');
+        const bgImg = document.getElementById('bg-image');
+        const bgVid = document.getElementById('bg-video');
+        if (isVideo) {
+          bgVid.src = bgUrl;
+          bgVid.style.opacity = (d.background_opacity ?? 100) / 100;
+          bgImg.style.opacity = 0;
+          bgVid.play().catch(() => {});
+        } else {
+          bgImg.src = bgUrl;
+          bgImg.style.opacity = (d.background_opacity ?? 100) / 100;
+          bgVid.style.opacity = 0;
+        }
+      }
+
+      const topTrackPill = document.getElementById('topTrackPill');
+      if (d.music_url) {
+        const prevSrc = audio.getAttribute('data-active-src') || '';
+        if (prevSrc !== d.music_url) {
+          audio.setAttribute('data-active-src', d.music_url);
+          audio.src = d.music_url;
+          audio.load();
+        }
+        const vol = (d.music_volume !== undefined ? Math.max(0, Math.min(100, d.music_volume)) : 80) / 100;
+        currentVolume = vol;
+        volSlider.value = String(vol);
+        setVolume(vol);
+        document.getElementById('topTrackTitle').textContent = d.music_title || 'Audio Track';
+        topTrackPill.style.display = 'inline-flex';
+
+        if (isEntered) {
+          audio.play().then(() => {
+            isPlaying = true;
+            updateTopPlayState();
+          }).catch(() => {});
+        }
+      } else {
+        topTrackPill.style.display = 'none';
+        audio.pause();
+        isPlaying = false;
+        updateTopPlayState();
+      }
+
+      const linksList = document.getElementById('linksList');
+      linksList.innerHTML = '';
+      if (d.links && d.links.length) {
+        d.links.forEach(l => {
+          const a = document.createElement('a');
+          a.className = 'link-item';
+          a.href = l.url;
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          a.setAttribute('data-tooltip', `Open ${l.label || 'Link'}`);
+          const iconKey = (l.icon || 'link').toLowerCase();
+          const faClass = iconMap[iconKey] || 'fa-solid fa-link';
+          a.innerHTML = `
+            <i class="${faClass} link-icon"></i>
+            <span>${escapeHtml(l.label)}</span>
+          `;
+          linksList.appendChild(a);
+        });
+      }
+
+      document.getElementById('viewCount').textContent = `${(d.view_count || 0).toLocaleString()} views`;
+    }
+
+    async function fetchDiscordPresence(userId) {
+      try {
+        const res = await fetch(`/api/discord/${userId}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data.ok) return;
+
+        if (data.avatar_url && !profileData.custom_avatar_url) {
+          document.getElementById('avatarImg').src = data.avatar_url;
+          
+        }
+
+        const statusIndicator = document.getElementById('statusIndicator');
+        statusIndicator.className = 'status-indicator';
+        if (data.status === 'online') statusIndicator.classList.add('status-online');
+        else if (data.status === 'idle') statusIndicator.classList.add('status-idle');
+        else if (data.status === 'dnd') statusIndicator.classList.add('status-dnd');
+        else statusIndicator.classList.add('status-offline');
+
+        const bubbleWrap = document.getElementById('statusBubbleWrap');
+        const statusText = document.getElementById('statusText');
+        const statusEmoji = document.getElementById('statusEmoji');
+
+        if (data.custom_status && data.custom_status.text) {
+          bubbleWrap.style.display = 'inline-flex';
+          statusText.textContent = data.custom_status.text;
+          if (data.custom_status.emoji_url) {
+            statusEmoji.style.display = 'inline-flex';
+            statusEmoji.innerHTML = `<img src="${data.custom_status.emoji_url}" alt="emoji">`;
+          } else {
+            statusEmoji.style.display = 'none';
+          }
+        } else {
+          bubbleWrap.style.display = 'none';
+        }
+
+        const spotifyCard = document.getElementById('spotifyCard');
+        if (data.spotify) {
+          spotifyCard.style.display = 'flex';
+          document.getElementById('spotifySong').textContent = data.spotify.song || 'Song';
+          document.getElementById('spotifyArtist').textContent = data.spotify.artist || 'Artist';
+          if (data.spotify.album_art_url) {
+            document.getElementById('spotifyArt').src = data.spotify.album_art_url;
+          }
+        } else {
+          spotifyCard.style.display = 'none';
+        }
+      } catch (e) {}
+    }
+
+    const pCanvas = document.getElementById("particles-canvas");
+    if (pCanvas) {
+      const pCtx = pCanvas.getContext("2d");
+      let pw = pCanvas.width = window.innerWidth;
+      let ph = pCanvas.height = window.innerHeight;
+      const stars = [];
+      const starCount = Math.min(Math.floor((pw * ph) / 22000), 50);
+      for (let i = 0; i < starCount; i++) {
+        stars.push({
+          x: Math.random() * pw,
+          y: Math.random() * ph,
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: (Math.random() - 0.5) * 0.3,
+          r: Math.random() * 1.5 + 0.6,
+          a: Math.random() * 0.4 + 0.15
+        });
+      }
+      function pRender() {
+        pCtx.clearRect(0, 0, pw, ph);
+        stars.forEach(s => {
+          s.x += s.vx;
+          s.y += s.vy;
+          if (s.x < 0 || s.x > pw) s.vx *= -1;
+          if (s.y < 0 || s.y > ph) s.vy *= -1;
+          pCtx.beginPath();
+          pCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          pCtx.fillStyle = `rgba(255, 255, 255, ${s.a})`;
+          pCtx.fill();
+        });
+        requestAnimationFrame(pRender);
+      }
+      pRender();
+      window.addEventListener("resize", () => {
+        pw = pCanvas.width = window.innerWidth;
+        ph = pCanvas.height = window.innerHeight;
+      });
+    }
+
+    
+    let availablePresets = [];
+    let currentPresetSlug = '';
+    let currentPresetId = '';
+    let isAdminUser = false;
+
+    const presetPillBtn = document.getElementById('presetPillBtn');
+    const presetDropdown = document.getElementById('presetDropdown');
+
+    if (presetPillBtn && presetDropdown) {
+      presetPillBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        presetDropdown.classList.toggle('open');
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#presetMenuWrap')) {
+          presetDropdown.classList.remove('open');
+        }
+      });
+    }
+
+    async function initPresets() {
+      try {
+        const res = await fetch('/api/public_presets');
+        const json = await res.json();
+        if (json.ok && json.presets) {
+          availablePresets = json.presets;
+          renderPresetItems();
+        }
+
+        const authRes = await fetch('/api/check_auth');
+        if (authRes.ok) {
+          const authJson = await authRes.json();
+          if (authJson.ok) {
+            isAdminUser = true;
+            const adminActions = document.getElementById('presetAdminActions');
+            if (adminActions) adminActions.style.display = 'block';
+          }
+        }
+      } catch (e) {}
+    }
+
+    function renderPresetItems() {
+      const container = document.getElementById('presetItemsList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const mainBtn = document.createElement('button');
+      mainBtn.className = 'preset-item-btn' + (!currentPresetSlug ? ' active' : '');
+      mainBtn.innerHTML = `<span>Main</span><span style="font-size: 0.72rem; opacity: 0.5;">chony.info</span>`;
+      mainBtn.onclick = () => switchPreset('', '', 'Main');
+      container.appendChild(mainBtn);
+
+      availablePresets.forEach(p => {
+        const slug = (p.slug || p.name || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+        if (slug === 'chony' || slug === 'main' || slug === 'root') return;
+        const displayName = p.name === 'balright' ? 'alt' : (p.name || slug);
+        const btn = document.createElement('button');
+        btn.className = 'preset-item-btn' + (currentPresetSlug === slug ? ' active' : '');
+        btn.innerHTML = `<span>${escapeHtml(displayName)}</span><span style="font-size: 0.72rem; opacity: 0.5;">${slug}.chony.info</span>`;
+        btn.onclick = () => switchPreset(slug, p.id, displayName);
+        container.appendChild(btn);
+      });
+    }
+
+    async function switchPreset(slug, id, name) {
+      currentPresetSlug = slug;
+      currentPresetId = id || '';
+      presetDropdown.classList.remove('open');
+
+      const label = document.getElementById('activePresetLabel');
+      if (label) label.textContent = name || (slug ? slug : 'Main');
+
+      try {
+        const url = slug ? `/api/profile?preset=${encodeURIComponent(slug)}` : '/api/profile';
+        const res = await fetch(url);
+        if (res.ok) {
+          profileData = await res.json();
+          renderProfile(profileData);
+          renderPresetItems();
+        }
+      } catch (e) {}
+    }
+
+    async function saveNewPresetFromPage() {
+      const name = prompt('Enter a name for this new preset snapshot:');
+      if (!name || !name.trim()) return;
+      const slug = prompt('Enter the subdomain slug (e.g. "alt" for alt.chony.info):', name.toLowerCase().replace(/[^a-z0-9_-]/g, ''));
+      try {
+        const res = await fetch('/api/presets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: name.trim(),
+            slug: (slug || '').trim().toLowerCase(),
+            snapshot: profileData
+          })
+        });
+        const json = await res.json();
+        if (json.ok) {
+          alert(`Preset "${name}" saved! Available at ${(slug || '').trim().toLowerCase()}.chony.info`);
+          await initPresets();
+        } else {
+          alert('Error: ' + (json.error || 'Failed to save preset'));
+        }
+      } catch (err) {
+        alert('Error: ' + err);
+      }
+    }
+
+    async function saveCurrentPresetFromPage() {
+      if (!currentPresetId) {
+        alert('You are on the main profile. Use "Save New Preset" to create a preset from this.');
+        return;
+      }
+      try {
+        const res = await fetch(`/api/presets/${currentPresetId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ snapshot: profileData })
+        });
+        const json = await res.json();
+        if (json.ok) {
+          alert('Saved current changes to this preset!');
+        } else {
+          alert('Error: ' + (json.error || 'Failed to update preset'));
+        }
+      } catch (err) {
+        alert('Error: ' + err);
+      }
+    }
+
+    async function applyCurrentPresetFromPage() {
+      if (!currentPresetId) {
+        alert('Already on main profile.');
+        return;
+      }
+      try {
+        const res = await fetch(`/api/presets/${currentPresetId}/apply`, { method: 'POST' });
+        const json = await res.json();
+        if (json.ok) {
+          alert('Preset successfully applied to main site!');
+          window.location.href = '/';
+        } else {
+          alert('Error: ' + (json.error || 'Failed to apply preset'));
+        }
+      } catch (err) {
+        alert('Error: ' + err);
+      }
+    }
+
+    initPresets();
+    loadProfile();
+    requestAnimationFrame(moveIndicator);
+    window.addEventListener('resize', moveIndicator);
+  </script>
+</body>
+</html>

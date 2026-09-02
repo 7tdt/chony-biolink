@@ -1,0 +1,2715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>chony.info — Admin Control Panel</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    :root {
+      --accent: #d4b896;
+      --accent-hover: #e5cbab;
+      --accent-glow: rgba(212, 184, 150, 0.25);
+      --bg: #09090b;
+      --card-bg: #121215;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-main: #f4f4f6;
+      --text-muted: #8e8e99;
+      --input-bg: #18181c;
+      --danger: #ef4444;
+      --success: #10b981;
+      --discord: #5865F2;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #authModal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.88);
+      backdrop-filter: blur(16px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .auth-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 36px 32px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 40px var(--accent-glow);
+    }
+    .auth-icon {
+      font-size: 2.2rem;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    header {
+      background: rgba(18, 18, 21, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--text-main);
+      letter-spacing: -0.5px;
+    }
+    .brand span { color: var(--accent); }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .dashboard-container {
+      display: flex;
+      flex: 1;
+      max-width: 1240px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 28px 24px;
+      gap: 28px;
+    }
+
+    .sidebar {
+      width: 240px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+    }
+    .tab-btn i {
+      width: 20px;
+      text-align: center;
+      font-size: 1rem;
+    }
+    .tab-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+    }
+    .tab-btn.active {
+      background: rgba(212, 184, 150, 0.12);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .tab-content {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .tab-content.active {
+      display: flex;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .discord-sync-banner {
+      background: rgba(88, 101, 242, 0.08);
+      border: 1px solid rgba(88, 101, 242, 0.25);
+      border-radius: 18px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+    .discord-user-preview {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .discord-avatar-badge {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 2px solid var(--discord);
+      object-fit: cover;
+      box-shadow: 0 0 16px rgba(88, 101, 242, 0.35);
+    }
+    .discord-text-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .discord-sync-name {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .discord-sync-sub {
+      font-size: 0.84rem;
+      color: #b9bbbe;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+    label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    input[type="text"], input[type="password"], input[type="number"], textarea {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 0.92rem;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    input:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(212, 184, 150, 0.15);
+    }
+    textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    .custom-select-wrap {
+      position: relative;
+      user-select: none;
+    }
+    .custom-select-trigger {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 11px 14px;
+      color: var(--text-main);
+      font-size: 0.92rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      gap: 10px;
+      transition: all 0.2s ease;
+    }
+    .custom-select-trigger:hover, .custom-select-wrap.active .custom-select-trigger {
+      border-color: var(--accent);
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .custom-select-val {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .custom-select-arrow {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      transition: transform 0.25s ease;
+    }
+    .custom-select-wrap.active .custom-select-arrow {
+      transform: rotate(180deg);
+      color: var(--accent);
+    }
+    .custom-select-options {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: #141418;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 6px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 0, 0, 0.4);
+      z-index: 999;
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+      max-height: 240px;
+      overflow-y: auto;
+      backdrop-filter: blur(20px);
+      animation: dropDownAnim 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .custom-select-wrap.active .custom-select-options {
+      display: flex;
+    }
+    @keyframes dropDownAnim {
+      from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .custom-select-opt {
+      padding: 9px 12px;
+      border-radius: 9px;
+      color: #dedee4;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.15s ease;
+    }
+    .custom-select-opt:hover {
+      background: rgba(212, 184, 150, 0.12);
+      color: var(--accent);
+    }
+    .custom-select-opt.selected {
+      background: var(--accent);
+      color: #09090b;
+      font-weight: 600;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #09090b;
+    }
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px var(--accent-glow);
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+    .btn-discord {
+      background: var(--discord);
+      color: #ffffff;
+    }
+    .btn-discord:hover {
+      background: #4752c4;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(88, 101, 242, 0.35);
+    }
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+    .btn-danger:hover {
+      background: var(--danger);
+      color: #ffffff;
+    }
+
+    .audio-dropzone {
+      border: 2px dashed rgba(212, 184, 150, 0.3);
+      border-radius: 14px;
+      padding: 24px 20px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.02);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .audio-dropzone:hover, .audio-dropzone.dragover {
+      border-color: var(--accent);
+      background: rgba(212, 184, 150, 0.08);
+      transform: scale(1.005);
+    }
+    .audio-item-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: all 0.2s ease;
+    }
+    .audio-item-card:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+    .audio-item-card.active-track {
+      border-color: var(--accent);
+      background: rgba(212, 184, 150, 0.09);
+    }
+    .media-filter-btn {
+      padding: 6px 14px;
+      border-radius: 99px;
+      font-size: 0.8rem;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .media-filter-btn.active, .media-filter-btn:hover {
+      background: var(--accent);
+      color: #09090b;
+      font-weight: 600;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .toggle-label {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .toggle-title {
+      font-size: 0.92rem;
+      font-weight: 500;
+    }
+    .toggle-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      inset: 0;
+      background-color: #2b2b32;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: .3s;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      border-radius: 50%;
+      transition: .3s;
+    }
+    input:checked + .slider { background-color: var(--accent); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    .discord-bubble-wrapper {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.25s ease;
+    }
+    .bubble-connector-dot {
+      width: 10px;
+      height: 10px;
+      background: #2b2d31;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
+    }
+    .discord-thought-bubble {
+      position: relative;
+      background: #2b2d31;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 6px 14px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #dbdee1;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .bundle-classic { animation: classicFloat 3.6s infinite ease-in-out; }
+    @keyframes classicFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    .bundle-classic.poof-out { animation: classicPoofOut 0.32s cubic-bezier(0.25, 1, 0.5, 1) forwards !important; }
+    @keyframes classicPoofOut { 0% { transform: scale(1) translateY(0); opacity: 1; } 35% { transform: scale(1.24) translateY(-3px); opacity: 0.9; } 100% { transform: scale(0.1) translateY(8px); opacity: 0; filter: blur(6px); } }
+    .bundle-classic.pop-in { animation: classicPopIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important; }
+    @keyframes classicPopIn { 0% { transform: scale(0) translateY(12px); opacity: 0; } 65% { transform: scale(1.18) translateY(-4px); opacity: 1; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+
+    .bundle-cosmic .discord-thought-bubble { background: linear-gradient(135deg, #150928, #2a1147); border-color: #a855f7; box-shadow: 0 0 15px rgba(168, 85, 247, 0.4); color: #f3e8ff; }
+    .bundle-cosmic .bubble-connector-dot { background: #a855f7; box-shadow: 0 0 8px #a855f7; }
+    .bundle-cosmic { animation: cosmicFloat 4s infinite ease-in-out; }
+    @keyframes cosmicFloat { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-5px) scale(1.02); } }
+    .bundle-cosmic.poof-out { animation: cosmicPoofOut 0.38s ease-in forwards !important; }
+    @keyframes cosmicPoofOut { 0% { transform: scale(1) rotate(0deg); opacity: 1; } 100% { transform: scale(0) rotate(-360deg); opacity: 0; filter: blur(10px); } }
+    .bundle-cosmic.pop-in { animation: cosmicPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important; }
+    @keyframes cosmicPopIn { 0% { transform: scale(0) rotate(360deg); opacity: 0; filter: blur(8px); } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+
+    .bundle-glitch .discord-thought-bubble { background: #090a0f; border: 1.5px solid #00f0ff; box-shadow: 0 0 15px rgba(0, 240, 255, 0.35); color: #00f0ff; font-family: 'JetBrains Mono', monospace; }
+    .bundle-glitch .bubble-connector-dot { background: #ff007f; box-shadow: 0 0 6px #ff007f; }
+    .bundle-glitch { animation: glitchJitter 2.5s infinite; }
+    @keyframes glitchJitter { 0%, 92%, 100% { transform: translate(0, 0); } 94% { transform: translate(-2px, 1px); } 97% { transform: translate(2px, -1px); } }
+    .bundle-glitch.poof-out { animation: glitchPoofOut 0.28s steps(4) forwards !important; }
+    @keyframes glitchPoofOut { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1) skewX(15deg); opacity: 0.7; } 100% { transform: scale(0.2) skewX(-25deg); opacity: 0; } }
+    .bundle-glitch.pop-in { animation: glitchPopIn 0.35s steps(5) forwards !important; }
+    @keyframes glitchPopIn { 0% { transform: scale(0) skewX(30deg); opacity: 0; } 40% { transform: scale(1.2) skewX(-15deg); opacity: 0.8; } 100% { transform: scale(1) skewX(0deg); opacity: 1; } }
+
+    .bundle-jelly .discord-thought-bubble { background: linear-gradient(135deg, #064e3b, #047857); border-color: #10b981; color: #ecfdf5; }
+    .bundle-jelly .bubble-connector-dot { background: #10b981; }
+    .bundle-jelly { animation: jellyFloat 2.8s infinite ease-in-out; }
+    @keyframes jellyFloat { 0%, 100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-6px) scale(1.06, 0.94); } }
+    .bundle-jelly.poof-out { animation: jellyPoofOut 0.35s ease-in forwards !important; }
+    @keyframes jellyPoofOut { 0% { transform: scale(1, 1); opacity: 1; } 40% { transform: scale(1.4, 0.5); opacity: 0.9; } 100% { transform: scale(0.1, 1.8); opacity: 0; } }
+    .bundle-jelly.pop-in { animation: jellyPopIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards !important; }
+    @keyframes jellyPopIn { 0% { transform: scale(0.2, 2) translateY(20px); opacity: 0; } 50% { transform: scale(1.3, 0.7) translateY(-6px); opacity: 1; } 100% { transform: scale(1, 1) translateY(0); opacity: 1; } }
+
+    .bundle-fireworks .discord-thought-bubble { background: #111116; border: 1.5px solid #f59e0b; box-shadow: 0 0 16px rgba(245, 158, 11, 0.45); color: #fef3c7; }
+    .bundle-fireworks .bubble-connector-dot { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+    .bundle-fireworks { animation: fireworkFloat 3.2s infinite ease-in-out; }
+    @keyframes fireworkFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    .bundle-fireworks.poof-out { animation: fireworkPoofOut 0.34s ease-out forwards !important; }
+    @keyframes fireworkPoofOut { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.8; filter: brightness(2); } 100% { transform: scale(2); opacity: 0; filter: blur(12px); } }
+    .bundle-fireworks.pop-in { animation: fireworkPopIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important; }
+    @keyframes fireworkPopIn { 0% { transform: scale(0) translateY(30px); opacity: 0; } 70% { transform: scale(1.2) translateY(-4px); opacity: 1; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+
+    .bundle-phantom .discord-thought-bubble { background: rgba(15, 23, 42, 0.85); border: 1px solid #38bdf8; box-shadow: 0 0 20px rgba(56, 189, 248, 0.35); color: #e0f2fe; backdrop-filter: blur(12px); }
+    .bundle-phantom .bubble-connector-dot { background: #38bdf8; opacity: 0.7; }
+    .bundle-phantom { animation: phantomFloat 4.2s infinite ease-in-out; }
+    @keyframes phantomFloat { 0%, 100% { transform: translateY(0); opacity: 0.85; } 50% { transform: translateY(-7px); opacity: 1; } }
+    .bundle-phantom.poof-out { animation: phantomPoofOut 0.4s ease-in forwards !important; }
+    @keyframes phantomPoofOut { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-25px); opacity: 0; filter: blur(12px); } }
+    .bundle-phantom.pop-in { animation: phantomPopIn 0.5s ease-out forwards !important; }
+    @keyframes phantomPopIn { 0% { transform: translateY(25px); opacity: 0; filter: blur(12px); } 100% { transform: translateY(0); opacity: 1; filter: blur(0); } }
+
+    .bundle-arcade .discord-thought-bubble { background: #181824; border: 2px solid #eab308; border-radius: 4px; font-family: monospace; font-size: 0.72rem; color: #fef08a; box-shadow: 3px 3px 0px #000; }
+    .bundle-arcade .bubble-connector-dot { width: 8px; height: 8px; border-radius: 0; background: #eab308; }
+    .bundle-arcade { animation: arcadeFloat 1.2s steps(3) infinite; }
+    @keyframes arcadeFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    .bundle-arcade.poof-out { animation: arcadePoofOut 0.25s steps(3) forwards !important; }
+    @keyframes arcadePoofOut { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.6); opacity: 0.5; } 100% { transform: scale(0); opacity: 0; } }
+    .bundle-arcade.pop-in { animation: arcadePopIn 0.3s steps(4) forwards !important; }
+    @keyframes arcadePopIn { 0% { transform: scale(0); opacity: 0; } 75% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+
+    .bundle-holo .discord-thought-bubble { background: rgba(255,255,255,0.06); border: 1.5px solid #ff007f; color: #ffffff; box-shadow: 0 8px 24px rgba(121, 40, 202, 0.35); backdrop-filter: blur(16px); }
+    .bundle-holo .bubble-connector-dot { background: #00dfd8; }
+    .bundle-holo { animation: holoFloat 3.8s infinite ease-in-out; }
+    @keyframes holoFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    .bundle-holo.poof-out { animation: holoPoofOut 0.35s ease forwards !important; }
+    @keyframes holoPoofOut { 0% { transform: rotateY(0deg) scale(1); opacity: 1; } 100% { transform: rotateY(90deg) scale(0.5); opacity: 0; } }
+    .bundle-holo.pop-in { animation: holoPopIn 0.48s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important; }
+    @keyframes holoPopIn { 0% { transform: rotateY(-90deg) scale(0.6); opacity: 0; } 100% { transform: rotateY(0deg) scale(1); opacity: 1; } }
+
+    .bundle-heartbeat .discord-thought-bubble { background: linear-gradient(135deg, #4c0519, #831843); border-color: #f43f5e; box-shadow: 0 0 16px rgba(244, 63, 94, 0.4); color: #ffe4e6; }
+    .bundle-heartbeat .bubble-connector-dot { background: #f43f5e; }
+    .bundle-heartbeat { animation: heartbeatPulse 1.4s infinite ease-in-out; }
+    @keyframes heartbeatPulse { 0%, 100% { transform: scale(1); } 14% { transform: scale(1.08); } 28% { transform: scale(1); } 42% { transform: scale(1.05); } }
+    .bundle-heartbeat.poof-out { animation: heartPoofOut 0.32s ease-in forwards !important; }
+    @keyframes heartPoofOut { 0% { transform: scale(1); opacity: 1; } 40% { transform: scale(1.3); opacity: 0.8; } 100% { transform: scale(0); opacity: 0; } }
+    .bundle-heartbeat.pop-in { animation: heartPopIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important; }
+    @keyframes heartPopIn { 0% { transform: scale(0); opacity: 0; } 60% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+
+    .bundle-magnetic .discord-thought-bubble { background: #1e293b; border: 1.5px solid #94a3b8; color: #f8fafc; }
+    .bundle-magnetic .bubble-connector-dot { background: #94a3b8; }
+    .bundle-magnetic { animation: magneticFloat 3.4s infinite ease-in-out; }
+    @keyframes magneticFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+    .bundle-magnetic.poof-out { animation: magneticPoofOut 0.28s ease-in forwards !important; }
+    @keyframes magneticPoofOut { 0% { transform: scale(1) translateX(0); opacity: 1; } 100% { transform: scale(0.2) translateX(-40px); opacity: 0; } }
+    .bundle-magnetic.pop-in { animation: magneticPopIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.4) forwards !important; }
+    @keyframes magneticPopIn { 0% { transform: scale(0.5) translateX(60px); opacity: 0; } 100% { transform: scale(1) translateX(0); opacity: 1; } }
+
+    .bundle-electric .discord-thought-bubble { background: #0f172a; border: 1.5px solid #38bdf8; box-shadow: 0 0 16px rgba(56, 189, 248, 0.5); color: #e0f2fe; }
+    .bundle-electric .bubble-connector-dot { background: #38bdf8; }
+    .bundle-electric { animation: electricFloat 2.6s infinite ease-in-out; }
+    @keyframes electricFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    .bundle-electric.poof-out { animation: electricPoofOut 0.26s ease-in forwards !important; }
+    @keyframes electricPoofOut { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.15); opacity: 0.9; } 100% { transform: scale(0); opacity: 0; } }
+    .bundle-electric.pop-in { animation: electricPopIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important; }
+    @keyframes electricPopIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+    .bundle-foam .discord-thought-bubble { background: rgba(255, 255, 255, 0.12); border: 1.5px solid rgba(255, 255, 255, 0.35); border-radius: 20px; color: #ffffff; backdrop-filter: blur(14px); }
+    .bundle-foam .bubble-connector-dot { background: rgba(255,255,255,0.4); }
+    .bundle-foam { animation: foamFloat 3.8s infinite ease-in-out; }
+    @keyframes foamFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .bundle-foam.poof-out { animation: foamPoofOut 0.3s ease-out forwards !important; }
+    @keyframes foamPoofOut { 0% { transform: scale(1); opacity: 1; } 40% { transform: scale(1.25); opacity: 0.8; } 100% { transform: scale(0.1); opacity: 0; } }
+    .bundle-foam.pop-in { animation: foamPopIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important; }
+    @keyframes foamPopIn { 0% { transform: scale(0); opacity: 0; } 65% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+
+    .bundle-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.25s ease;
+    }
+    .bundle-card:hover {
+      border-color: rgba(212, 184, 150, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .bundle-card.active-bundle {
+      border-color: var(--accent);
+      background: rgba(212, 184, 150, 0.04);
+      box-shadow: 0 0 20px rgba(212, 184, 150, 0.15);
+    }
+    .bundle-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .bundle-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .bundle-badge {
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: rgba(255,255,255,0.08);
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .bundle-card.active-bundle .bundle-badge {
+      background: var(--accent);
+      color: #09090b;
+    }
+    .bundle-preview-box {
+      background: #09090c;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 18px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 80px;
+      overflow: hidden;
+    }
+
+    .link-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      padding: 12px 16px;
+      border-radius: 14px;
+    }
+    .link-row input {
+      border: none;
+      background: transparent;
+      padding: 6px 8px;
+    }
+    .link-row input:focus {
+      box-shadow: none;
+    }
+
+    #customTooltip {
+      position: fixed;
+      pointer-events: none;
+      background: #18181c;
+      color: #ffffff;
+      border: 1px solid var(--accent);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      z-index: 999999;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+      white-space: nowrap;
+    }
+    #customTooltip.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    #customModalOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(14px);
+      z-index: 100000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: modalFadeIn 0.2s ease;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .custom-modal-card {
+      background: #141418;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      padding: 28px 30px;
+      width: 100%;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), 0 0 30px var(--accent-glow);
+      transform: scale(0.96);
+      animation: modalScaleUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes modalScaleUp {
+      to { transform: scale(1); }
+    }
+    .custom-modal-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .custom-modal-header i {
+      color: var(--accent);
+      font-size: 1.3rem;
+    }
+    .custom-modal-body {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+    .custom-modal-input {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: #ffffff;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    .custom-modal-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(212, 184, 150, 0.2);
+    }
+    .custom-modal-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #18181c;
+      border: 1px solid var(--accent);
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: 14px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+      z-index: 99999;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      animation: toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(14px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="customTooltip"></div>
+
+  <div id="customModalOverlay">
+    <div class="custom-modal-card">
+      <div class="custom-modal-header">
+        <i id="customModalIcon" class="fa-solid fa-sparkles"></i>
+        <span id="customModalTitle">Prompt</span>
+      </div>
+      <div id="customModalBody" class="custom-modal-body">Message</div>
+      <input type="text" id="customModalInput" class="custom-modal-input" style="display: none;" placeholder="...">
+      <div class="custom-modal-actions">
+        <button id="customModalCancel" class="btn btn-secondary">Cancel</button>
+        <button id="customModalOk" class="btn btn-primary">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="authModal">
+    <div class="auth-box">
+      <i class="fa-solid fa-shield-halved auth-icon"></i>
+      <h2 style="margin-bottom: 8px;">chony.info Admin</h2>
+      <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 24px;">Enter your admin password to access settings.</p>
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group" style="margin-bottom: 18px;">
+          <input type="password" id="adminPasswordInput" placeholder="Admin Password" required autofocus>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Unlock Panel</button>
+      </form>
+    </div>
+  </div>
+
+  <header>
+    <div class="brand">
+      <i class="fa-solid fa-fingerprint" style="color: var(--accent);"></i>
+      <span>chony</span>.info <b>panel</b>
+    </div>
+    <div class="nav-actions">
+      <a href="/" target="_blank" class="btn btn-secondary" data-tooltip="View live biolink page"><i class="fa-solid fa-arrow-up-right-from-square"></i> Live Profile</a>
+      <button class="btn btn-primary" onclick="saveProfile()" data-tooltip="Save all changes"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+    </div>
+  </header>
+
+  <div class="dashboard-container">
+
+    <aside class="sidebar">
+      <button class="tab-btn active" onclick="switchTab('profile')" data-tooltip="Edit name, handle, avatar & bio"><i class="fa-solid fa-user"></i> Profile & Identity</button>
+      <button class="tab-btn" onclick="switchTab('bubbles')" data-tooltip="10+ animated bubble bundles with live sandbox"><i class="fa-solid fa-wand-magic-sparkles"></i> Bubble Animations</button>
+      <button class="tab-btn" onclick="switchTab('media')" data-tooltip="Configure music track & autoplay"><i class="fa-solid fa-music"></i> Audio & Media</button>
+      <button class="tab-btn" onclick="switchTab('visuals')" data-tooltip="Theme colors, fonts & visual effects"><i class="fa-solid fa-palette"></i> Visuals & Theme</button>
+      <button class="tab-btn" onclick="switchTab('links')" data-tooltip="Manage your social cards & URLs"><i class="fa-solid fa-link"></i> Social Links</button>
+      <button class="tab-btn" onclick="switchTab('badges')" data-tooltip="Custom badges & achievements"><i class="fa-solid fa-award"></i> Badges</button>
+      <button class="tab-btn" onclick="switchTab('presets')" data-tooltip="Save and restore theme snapshots"><i class="fa-solid fa-floppy-disk"></i> Presets</button>
+      <button class="tab-btn" onclick="switchTab('uploads')" data-tooltip="Upload audio, video & image assets"><i class="fa-solid fa-cloud-arrow-up"></i> File Uploads</button>
+    </aside>
+
+    <section id="tab-profile" class="tab-content active">
+
+      
+      <div id="editingPresetBanner" style="display: none; background: rgba(212,184,150,0.12); border: 1px solid var(--accent); border-radius: 14px; padding: 14px 20px; margin-bottom: 22px; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <i class="fa-solid fa-layer-group" style="color: var(--accent); font-size: 1.2rem;"></i>
+          <div>
+            <div style="font-weight: 700; font-size: 0.95rem; color: #fff;">Editing Preset: <span id="editingPresetName" style="color: var(--accent);">balright</span></div>
+            <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">Routing: <span id="editingPresetSlugBadge" style="color: var(--accent); font-family: 'JetBrains Mono', monospace;">alt.chony.info</span></div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button type="button" class="btn btn-primary" onclick="saveCurrentToEditingPreset()" style="font-size: 0.82rem;"><i class="fa-solid fa-floppy-disk"></i> Save to Preset</button>
+          <button type="button" class="btn btn-secondary" onclick="applyEditingPresetToMain()" style="font-size: 0.82rem;"><i class="fa-solid fa-check"></i> Apply to Main</button>
+          <button type="button" class="btn btn-secondary" onclick="exitPresetEditingMode()" style="font-size: 0.82rem;"><i class="fa-solid fa-xmark"></i> Exit to Main</button>
+        </div>
+      </div>
+
+      <div class="discord-sync-banner">
+        <div class="discord-user-preview">
+          <img id="discordPreviewAvatar" class="discord-avatar-badge" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Discord Avatar">
+          <div class="discord-text-meta">
+            <div id="discordPreviewName" class="discord-sync-name">
+              <span>chony calamri!</span>
+              <span id="discordPreviewStatus" style="font-size:0.75rem; padding: 2px 8px; border-radius: 99px; background: rgba(35,165,90,0.2); color:#23a55a; font-weight:600;">online</span>
+            </div>
+            <div id="discordPreviewHandle" class="discord-sync-sub">@matchaaas. &bull; ID: 1373371003425783951</div>
+          </div>
+        </div>
+        <button class="btn btn-discord" onclick="syncFromDiscord()" data-tooltip="Pull avatar, display name, handle & colors from Discord"><i class="fa-brands fa-discord"></i> Sync & Auto-Fill from Discord</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-id-card"></i> Identity Details</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Discord User ID</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="inpDiscordId" placeholder="e.g. 1373371003425783951" style="flex: 1;">
+              <button class="btn btn-secondary" onclick="syncFromDiscord()" data-tooltip="Fetch profile"><i class="fa-solid fa-rotate"></i> Fetch</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Display Name</label>
+            <input type="text" id="inpDisplayName" placeholder="e.g. chony calamri!">
+          </div>
+          <div class="form-group">
+            <label>Custom Handle (with @)</label>
+            <input type="text" id="inpCustomHandle" placeholder="e.g. @matchaaas.">
+          </div>
+          <div class="form-group">
+            <label>Custom Avatar URL (Leave blank to use Discord)</label>
+            <input type="text" id="inpCustomAvatarUrl" placeholder="https://... or /uploads/...">
+          </div>
+          <div class="form-group full-width">
+            <div class="toggle-row" style="padding: 6px 0; border-bottom: none;">
+              <div class="toggle-label">
+                <span class="toggle-title"><i class="fa-brands fa-discord" style="color:var(--discord);"></i> Use Live Discord Status</span>
+                <span class="toggle-desc">Automatically display your live Discord custom status (text & emoji) and online presence.</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="inpUseDiscordStatus" onchange="toggleStatusInputs()">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div id="discordStatusLivePreview" style="font-size: 0.82rem; color: #a0a0a8; padding: 6px 12px; background: rgba(88,101,242,0.1); border-radius: 8px; margin-top: 4px; display: none;">
+              Live Discord Status: <span id="discordStatusLiveText" style="color: #ffffff; font-weight: 500;">none</span>
+            </div>
+          </div>
+          <div class="form-group" id="groupCustomStatus">
+            <label>Custom Status Text (Leave blank to hide)</label>
+            <input type="text" id="inpCustomStatus" placeholder="e.g. living in the terminal">
+          </div>
+          <div class="form-group" id="groupStatusEmoji">
+            <label>Status Emoji (Leave blank to remove)</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="inpStatusEmoji" placeholder="e.g. ⚡, 🔥, 🌙 (or leave blank)" style="flex: 1;">
+              <button type="button" class="btn btn-secondary" onclick="document.getElementById('inpStatusEmoji').value = ''; showToast('Status emoji removed');" data-tooltip="Remove emoji"><i class="fa-solid fa-xmark"></i> Clear</button>
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label>Bio (Supports line breaks)</label>
+            <textarea id="inpBio" placeholder="Tell the world about yourself..."></textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-bubbles" class="tab-content">
+
+      <div class="card" style="background: linear-gradient(145deg, rgba(20, 20, 26, 0.9), rgba(12, 12, 16, 0.95)); border-color: rgba(212, 184, 150, 0.25);">
+        <div class="card-title" style="justify-content: space-between;">
+          <span><i class="fa-solid fa-flask" style="color: var(--accent);"></i> Live Interactive Bubble Sandbox</span>
+          <span id="activeBundleBadge" style="font-size: 0.78rem; padding: 3px 10px; border-radius: 99px; background: rgba(212,184,150,0.15); color: var(--accent); font-weight: 600;">Active: Discord Classic</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">Test animations live, trigger poof & reappear bursts, and switch between 12+ aesthetic bundle themes in 1-click.</p>
+
+        <div style="background: #09090c; border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 28px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; position: relative; overflow: hidden; min-height: 160px;">
+          <div style="position: relative; display: flex; align-items: center; justify-content: center; min-height: 100px;">
+
+            <div style="position: relative; width: 80px; height: 80px;">
+              <img id="sandboxAvatar" src="https://cdn.discordapp.com/embed/avatars/0.png" style="width:100%; height:100%; border-radius: 50%; border: 3px solid #232428; object-fit: cover;">
+              <div style="position: absolute; bottom: 0; right: 0; width: 20px; height: 20px; border-radius: 50%; background: #f23f43; border: 3px solid #09090c; display: flex; align-items: center; justify-content: center;">
+                <div style="width: 8px; height: 2.5px; background: #fff; border-radius: 1px;"></div>
+              </div>
+            </div>
+
+            <div id="sandboxBubbleWrap" class="discord-bubble-wrapper bundle-classic" style="position: absolute; left: calc(50% + 36px); top: 8px; display: inline-flex;">
+              <div class="bubble-connector-dot"></div>
+              <div id="sandboxBubble" class="discord-thought-bubble" style="max-width: 260px;">
+                <span id="sandboxEmoji" style="display: none;"></span>
+                <span id="sandboxText">preview status text</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 10px;">
+            <button type="button" class="btn btn-secondary" onclick="triggerSandboxPoof()"><i class="fa-solid fa-burst"></i> Test Poof & Pop</button>
+            <button type="button" class="btn btn-secondary" onclick="triggerSandboxHover()"><i class="fa-solid fa-arrow-pointer"></i> Test Hover Glow</button>
+            <button type="button" class="btn btn-primary" onclick="applyCurrentSandboxBundle()"><i class="fa-solid fa-check"></i> Apply This Bundle to Profile</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-boxes-stacked"></i> Choose Animation Bundle (12 Styles)</div>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Each bundle includes custom particle physics, custom idle floating, custom elastic pop-in, and custom poof-out burst transitions.</p>
+
+        <div id="bundlesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 16px;">
+
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-media" class="tab-content">
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-music"></i> Audio Configuration & Hosting</div>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 14px;">Upload audio files directly to your server (MP3, WAV, OGG, M4A, FLAC up to 50MB) or provide a custom audio URL.</p>
+
+        <div class="audio-dropzone" id="audioDropzone" onclick="document.getElementById('musicFileInput').click()">
+          <input type="file" id="musicFileInput" accept="audio/*,.mp3,.wav,.ogg,.m4a,.flac" style="display: none;" onchange="handleMusicFileUpload(this)">
+          <div style="font-size: 2.2rem; color: var(--accent); margin-bottom: 8px;"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+          <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 4px;">Click or Drag & Drop an Audio File Here</div>
+          <div style="color: var(--text-muted); font-size: 0.8rem;">Supports MP3, WAV, FLAC, M4A, OGG (Hosted locally on your server)</div>
+          <div id="audioUploadProgress" style="display: none; margin-top: 12px; font-size: 0.85rem; color: var(--accent);"><i class="fa-solid fa-spinner fa-spin"></i> Uploading audio to server...</div>
+        </div>
+
+        <div class="form-grid" style="margin-top: 16px;">
+          <div class="form-group full-width">
+            <label>Music Title / Track Name</label>
+            <input type="text" id="inpMusicTitle" placeholder="e.g. Ken Carson - Fighting My Demons" oninput="updateAudioPlayerPreview()">
+          </div>
+          <div class="form-group full-width">
+            <label>Active Audio Source URL</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="inpMusicUrl" placeholder="/uploads/... or https://..." style="flex: 1;" oninput="updateAudioPlayerPreview(this.value)">
+              <button type="button" class="btn btn-secondary" onclick="document.getElementById('musicFileInput').click()" data-tooltip="Upload new audio file"><i class="fa-solid fa-file-arrow-up"></i> Upload</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="audioPreviewCard" style="background: rgba(0,0,0,0.35); border: 1px solid var(--card-border); border-radius: 12px; padding: 12px 16px; margin-top: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
+            <button type="button" id="btnPreviewPlay" class="btn btn-primary" style="width: 40px; height: 40px; border-radius: 50%; padding: 0;" onclick="toggleAudioPreview()"><i id="iconPreviewPlay" class="fa-solid fa-play"></i></button>
+            <div style="min-width: 0; flex: 1;">
+              <div id="previewTrackTitle" style="font-weight: 600; font-size: 0.88rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">No Audio Loaded</div>
+              <div id="previewTrackUrl" style="font-size: 0.76rem; color: var(--text-muted); font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Upload a song above to host and play</div>
+            </div>
+          </div>
+          <audio id="panelAudioElement" preload="none" onended="onAudioPreviewEnded()"></audio>
+        </div>
+
+        <div class="form-group" style="margin-top: 16px;">
+          <label>Default Playback Volume (0% to 100%)</label>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <i class="fa-solid fa-volume-low" style="color: var(--text-muted);"></i>
+            <input type="range" id="inpMusicVolume" min="0" max="100" value="80" style="flex: 1;" oninput="onMusicVolumeChange(this.value)">
+            <i class="fa-solid fa-volume-high" style="color: var(--accent);"></i>
+            <span id="musicVolumeDisplay" style="font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--accent); min-width: 46px; font-weight: 600;">80%</span>
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.75rem;" onclick="setVolumePreset(20)">20% (Quiet)</button>
+            <button type="button" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.75rem;" onclick="setVolumePreset(50)">50% (Medium)</button>
+            <button type="button" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.75rem;" onclick="setVolumePreset(80)">80% (Default)</button>
+            <button type="button" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.75rem;" onclick="setVolumePreset(100)">100% (Max)</button>
+          </div>
+        </div>
+
+        <div class="toggle-row" style="margin-top: 16px;">
+          <div class="toggle-label">
+            <span class="toggle-title">Autoplay Audio on Entry</span>
+            <span class="toggle-desc">Automatically starts audio playback when visitor clicks to enter the site.</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="inpMusicAutoplay">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 20px;">
+        <div class="card-title" style="display: flex; align-items: center; justify-content: space-between;">
+          <span><i class="fa-solid fa-folder-music"></i> Hosted Audio Library (Server Files)</span>
+          <button type="button" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.78rem;" onclick="loadHostedAudioList()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: 12px;">All music tracks uploaded and permanently hosted on your server. Click "Use as Active" to set as your profile song anytime.</p>
+        <div id="hostedAudioList" style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="color: var(--text-muted); font-size: 0.85rem; padding: 8px;">Loading hosted audio files...</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-visuals" class="tab-content">
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-paint-roller"></i> Color Themes & Background Styling</div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+          <label>Curated Color Theme Palettes</label>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <button type="button" class="btn btn-secondary" style="font-size:0.8rem; padding: 7px 12px;" onclick="setColorTheme('#ffb7c5', '#12090d', true)"><i class="fa-solid fa-seedling" style="color:#ffb7c5;"></i> 🌸 Sakura Blossom</button>
+            <button type="button" class="btn btn-secondary" style="font-size:0.8rem; padding: 7px 12px;" onclick="setColorTheme('#d4b896', '#08080a', false)"><i class="fa-solid fa-moon" style="color:#d4b896;"></i> 🌙 Midnight Gold</button>
+            <button type="button" class="btn btn-secondary" style="font-size:0.8rem; padding: 7px 12px;" onclick="setColorTheme('#a3cb38', '#080d09', false)"><i class="fa-solid fa-leaf" style="color:#a3cb38;"></i> 🍵 Matcha Dream</button>
+            <button type="button" class="btn btn-secondary" style="font-size:0.8rem; padding: 7px 12px;" onclick="setColorTheme('#ff4757', '#0f0507', false)"><i class="fa-solid fa-droplet" style="color:#ff4757;"></i> 🩸 Blood Eclipse</button>
+            <button type="button" class="btn btn-secondary" style="font-size:0.8rem; padding: 7px 12px;" onclick="setColorTheme('#00d2d3', '#040810', false)"><i class="fa-solid fa-bolt" style="color:#00d2d3;"></i> ⚡ Cyberpunk Neon</button>
+            <button type="button" class="btn btn-secondary" style="font-size:0.8rem; padding: 7px 12px;" onclick="setColorTheme('#a29bfe', '#0a0614', false)"><i class="fa-solid fa-gem" style="color:#a29bfe;"></i> 💜 Royal Lavender</button>
+            <button type="button" class="btn btn-secondary" style="font-size:0.8rem; padding: 7px 12px;" onclick="setColorTheme('#70a1ff', '#060b14', false)"><i class="fa-solid fa-snowflake" style="color:#70a1ff;"></i> 🧊 Arctic Frost</button>
+            <button type="button" class="btn btn-secondary" style="font-size:0.8rem; padding: 7px 12px;" onclick="setColorTheme('#e4e4e7', '#09090b', false)"><i class="fa-solid fa-circle" style="color:#e4e4e7;"></i> 🖤 Monochrome Slate</button>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Background URL (Image or MP4 Video)</label>
+            <input type="text" id="inpBackgroundUrl" placeholder="https://... or /uploads/bg.mp4">
+          </div>
+          <div class="form-group">
+            <label>Background Opacity (0 to 100%)</label>
+            <input type="number" id="inpBackgroundOpacity" min="0" max="100" value="100">
+          </div>
+          <div class="form-group">
+            <label>Accent Color</label>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="color" id="inpAccentColorPicker" style="width: 38px; height: 38px; padding: 2px; border-radius: 8px; border: 1px solid var(--card-border); background: transparent; cursor: pointer;" oninput="onAccentColorPicker(this.value)">
+              <input type="text" id="inpAccentColor" placeholder="#d4b896" style="flex: 1;" oninput="onAccentColorInput(this.value)">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Background Base Color</label>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="color" id="inpBgColorPicker" style="width: 38px; height: 38px; padding: 2px; border-radius: 8px; border: 1px solid var(--card-border); background: transparent; cursor: pointer;" oninput="onBgColorPicker(this.value)">
+              <input type="text" id="inpBgColor" placeholder="#08080a" style="flex: 1;" oninput="onBgColorInput(this.value)">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Font Family</label>
+            <div id="fontSelectContainer"></div>
+          </div>
+        </div>
+
+        <div class="card-title" style="margin-top: 14px;"><i class="fa-solid fa-arrow-pointer"></i> Custom Cursor & Styling</div>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Custom Cursor Image URL (.png, .cur, .gif, .svg, .ico)</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <input type="text" id="inpCustomCursorUrl" placeholder="https://... or /uploads/cursor.png" style="flex: 1;">
+              <button class="btn btn-secondary" onclick="document.getElementById('cursorFileInput').click()" data-tooltip="Upload cursor image (.png, .cur, .gif)"><i class="fa-solid fa-upload"></i> Upload Cursor</button>
+              <input type="file" id="cursorFileInput" style="display: none;" accept=".png,.cur,.ico,.gif,.svg,.webp" onchange="uploadCursorFile(this)">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Cursor Size (px)</label>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <input type="range" id="inpCursorSize" min="16" max="64" value="32" style="flex: 1;" oninput="document.getElementById('cursorSizeDisplay').textContent = this.value + 'px'">
+              <span id="cursorSizeDisplay" style="font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--accent); min-width: 44px;">32px</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+          <label>Popular Cursor Presets</label>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <button class="btn btn-secondary" style="font-size:0.8rem; padding: 7px 12px;" onclick="setCursorPreset('crosshair')"><i class="fa-solid fa-crosshairs" style="color:#ef4444;"></i> Red Crosshair</button>
+            <button class="btn btn-secondary" style="font-size:0.8rem; padding: 7px 12px;" onclick="setCursorPreset('katana')"><i class="fa-solid fa-wand-magic-sparkles" style="color:#a855f7;"></i> Neon Blade</button>
+            <button class="btn btn-secondary" style="font-size:0.8rem; padding: 7px 12px;" onclick="setCursorPreset('cyber')"><i class="fa-solid fa-bullseye" style="color:#38bdf8;"></i> Cyber Reticle</button>
+            <button class="btn btn-secondary" style="font-size:0.8rem; padding: 7px 12px;" onclick="setCursorPreset('star')"><i class="fa-solid fa-star" style="color:#fbbf24;"></i> Gold Star</button>
+            <button class="btn btn-secondary" style="font-size:0.8rem; padding: 7px 12px;" onclick="setCursorPreset('default')"><i class="fa-solid fa-circle-dot" style="color:var(--accent);"></i> Default Glowing Ring</button>
+          </div>
+        </div>
+
+        <div class="toggle-row">
+          <div class="toggle-label">
+            <span class="toggle-title">Eliminate System OS Cursor</span>
+            <span class="toggle-desc">Completely hides the default OS arrow cursor across the biolink.</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="inpHideSystemCursor" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="card-title" style="margin-top: 14px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Interactive Effects</div>
+        <div class="toggle-row">
+          <div class="toggle-label">
+            <span class="toggle-title">Sakura Leaves / Cherry Blossom Effect 🌸</span>
+            <span class="toggle-desc">Atmospheric pink cherry blossom petals falling with natural wind sway and 3D tumbling physics.</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="effSakura">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-label">
+            <span class="toggle-title">Bio Typing Animation</span>
+            <span class="toggle-desc">Smooth typewriter effect when reading bio.</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="effTyping">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-label">
+            <span class="toggle-title">Starfield / Floating Particles</span>
+            <span class="toggle-desc">Atmospheric canvas particle stars.</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="effParticles">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-label">
+            <span class="toggle-title">3D Tilt Card on Mouse Move</span>
+            <span class="toggle-desc">Spring physics track your cursor across the screen to tilt the profile card with dynamic holographic specular shine reflections.</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="effTilt">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-label">
+            <span class="toggle-title">Custom Glowing Trail / Aura</span>
+            <span class="toggle-desc">Smooth trailing cursor ring with glowing accent.</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="effCursor">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div style="background: rgba(212,184,150,0.08); border: 1px dashed rgba(212,184,150,0.25); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 0.82rem; color: #d4b896;">
+          <i class="fa-solid fa-arrows-rotate" style="margin-right: 6px;"></i> <b>Card Swipe Reload:</b> Press <b>'T'</b> or click the avatar/card to smoothly swipe out the card, reload live profile data, and swipe back in!
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-links" class="tab-content">
+      <div class="card">
+        <div class="card-title" style="justify-content: space-between;">
+          <span><i class="fa-solid fa-share-nodes"></i> Links & Socials</span>
+          <button class="btn btn-secondary" onclick="addLinkRow()" data-tooltip="Add a new custom link button"><i class="fa-solid fa-plus"></i> Add Link</button>
+        </div>
+        <div id="linksContainer" style="display: flex; flex-direction: column; gap: 12px;"></div>
+      </div>
+    </section>
+
+    <section id="tab-badges" class="tab-content">
+      <div class="card">
+        <div class="card-title" style="justify-content: space-between;">
+          <span><i class="fa-solid fa-award"></i> Profile Badges</span>
+          <button class="btn btn-secondary" onclick="addBadgeRow()" data-tooltip="Add a new badge icon"><i class="fa-solid fa-plus"></i> Add Badge</button>
+        </div>
+        <div id="badgesList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+      </div>
+    </section>
+
+    <section id="tab-presets" class="tab-content">
+      <div class="card">
+        <div class="card-title" style="justify-content: space-between;">
+          <span><i class="fa-solid fa-box-archive"></i> Saved Presets & Snapshots</span>
+          <button class="btn btn-primary" onclick="createPreset()" data-tooltip="Save current layout as preset"><i class="fa-solid fa-camera"></i> Save Current as Preset</button>
+        </div>
+        <div id="presetsList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+      </div>
+    </section>
+
+    <section id="tab-uploads" class="tab-content">
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Media Asset</div>
+        <p style="color: var(--text-muted); font-size: 0.88rem;">Upload audio (MP3/WAV/OGG), background videos (MP4), fonts, or images up to 50MB.</p>
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <input type="file" id="fileUploadInput" style="flex: 1;">
+          <button class="btn btn-primary" onclick="uploadSelectedFile()" data-tooltip="Upload file to server"><i class="fa-solid fa-upload"></i> Upload</button>
+        </div>
+        <div id="uploadResult" style="margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--accent);"></div>
+      </div>
+
+      <div class="card" style="margin-top: 20px;">
+        <div class="card-title" style="display: flex; align-items: center; justify-content: space-between;">
+          <span><i class="fa-solid fa-folder-open"></i> All Hosted Server Files</span>
+          <button type="button" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.78rem;" onclick="loadAllUploadsList()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        </div>
+        <div style="display: flex; gap: 8px; margin: 12px 0;">
+          <button type="button" class="media-filter-btn active" onclick="filterUploads('all', this)">All</button>
+          <button type="button" class="media-filter-btn" onclick="filterUploads('audio', this)">Audio</button>
+          <button type="button" class="media-filter-btn" onclick="filterUploads('image', this)">Images</button>
+          <button type="button" class="media-filter-btn" onclick="filterUploads('video', this)">Videos</button>
+        </div>
+        <div id="allUploadsList" style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="color: var(--text-muted); font-size: 0.85rem; padding: 8px;">Loading server files...</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div id="toast">
+    <i class="fa-solid fa-circle-check" style="color: var(--accent);"></i>
+    <span id="toastMsg">Changes saved successfully!</span>
+  </div>
+
+  <script>
+    let currentData = {};
+    let selectedFont = 'Inter';
+
+    const fontOptions = [
+      { value: 'Inter', label: 'Inter (Clean Modern)', icon: 'fa-solid fa-font' },
+      { value: 'JetBrains Mono', label: 'JetBrains Mono (Dev Code)', icon: 'fa-solid fa-code' },
+      { value: 'Space Grotesk', label: 'Space Grotesk (Tech Modern)', icon: 'fa-solid fa-cubes' },
+      { value: 'Outfit', label: 'Outfit (Minimalist)', icon: 'fa-solid fa-shapes' },
+      { value: 'Syne', label: 'Syne (High Fashion Bold)', icon: 'fa-solid fa-crown' }
+    ];
+
+    const linkIconOptions = [
+      { value: 'discord', label: 'Discord', icon: 'fa-brands fa-discord' },
+      { value: 'github', label: 'GitHub', icon: 'fa-brands fa-github' },
+      { value: 'youtube', label: 'YouTube', icon: 'fa-brands fa-youtube' },
+      { value: 'twitter', label: 'Twitter / X', icon: 'fa-brands fa-x-twitter' },
+      { value: 'twitch', label: 'Twitch', icon: 'fa-brands fa-twitch' },
+      { value: 'tiktok', label: 'TikTok', icon: 'fa-brands fa-tiktok' },
+      { value: 'telegram', label: 'Telegram', icon: 'fa-brands fa-telegram' },
+      { value: 'steam', label: 'Steam', icon: 'fa-brands fa-steam' },
+      { value: 'spotify', label: 'Spotify', icon: 'fa-brands fa-spotify' },
+      { value: 'roblox', label: 'Roblox', icon: 'fa-solid fa-cube' },
+      { value: 'globe', label: 'Website', icon: 'fa-solid fa-globe' },
+      { value: 'link', label: 'Custom Link', icon: 'fa-solid fa-link' }
+    ];
+
+    const badgeIconOptions = [
+      { value: 'check-badge', label: 'Verified Check', icon: 'fa-solid fa-circle-check' },
+      { value: 'crown', label: 'Crown / Owner', icon: 'fa-solid fa-crown' },
+      { value: 'code', label: 'Code / Dev', icon: 'fa-solid fa-code' },
+      { value: 'star', label: 'Star', icon: 'fa-solid fa-star' },
+      { value: 'shield', label: 'Shield', icon: 'fa-solid fa-shield-halved' },
+      { value: 'fire', label: 'Fire', icon: 'fa-solid fa-fire' },
+      { value: 'bolt', label: 'Bolt', icon: 'fa-solid fa-bolt' }
+    ];
+
+    const tooltipEl = document.getElementById('customTooltip');
+    document.addEventListener('mouseover', (e) => {
+      const target = e.target.closest('[data-tooltip]');
+      if (target) {
+        const text = target.getAttribute('data-tooltip');
+        if (text) {
+          tooltipEl.textContent = text;
+          tooltipEl.classList.add('visible');
+        }
+      }
+    });
+    document.addEventListener('mousemove', (e) => {
+      if (tooltipEl.classList.contains('visible')) {
+        const x = e.clientX + 14;
+        const y = e.clientY + 14;
+        tooltipEl.style.left = `${Math.min(x, window.innerWidth - tooltipEl.offsetWidth - 12)}px`;
+        tooltipEl.style.top = `${Math.min(y, window.innerHeight - tooltipEl.offsetHeight - 12)}px`;
+      }
+    });
+    document.addEventListener('mouseout', (e) => {
+      const target = e.target.closest('[data-tooltip]');
+      if (target) {
+        tooltipEl.classList.remove('visible');
+      }
+    });
+
+    const CustomModal = {
+      overlay: document.getElementById('customModalOverlay'),
+      icon: document.getElementById('customModalIcon'),
+      title: document.getElementById('customModalTitle'),
+      body: document.getElementById('customModalBody'),
+      input: document.getElementById('customModalInput'),
+      cancelBtn: document.getElementById('customModalCancel'),
+      okBtn: document.getElementById('customModalOk'),
+
+      alert(title, message, icon = 'fa-solid fa-circle-info') {
+        return new Promise((resolve) => {
+          this.icon.className = icon;
+          this.title.textContent = title;
+          this.body.textContent = message;
+          this.input.style.display = 'none';
+          this.cancelBtn.style.display = 'none';
+          this.okBtn.textContent = 'OK';
+          this.overlay.style.display = 'flex';
+
+          const cleanup = () => {
+            this.overlay.style.display = 'none';
+            this.okBtn.onclick = null;
+            resolve();
+          };
+          this.okBtn.onclick = cleanup;
+        });
+      },
+
+      confirm(title, message, icon = 'fa-solid fa-triangle-exclamation') {
+        return new Promise((resolve) => {
+          this.icon.className = icon;
+          this.title.textContent = title;
+          this.body.textContent = message;
+          this.input.style.display = 'none';
+          this.cancelBtn.style.display = 'inline-flex';
+          this.okBtn.textContent = 'Confirm';
+          this.overlay.style.display = 'flex';
+
+          this.cancelBtn.onclick = () => {
+            this.overlay.style.display = 'none';
+            resolve(false);
+          };
+          this.okBtn.onclick = () => {
+            this.overlay.style.display = 'none';
+            resolve(true);
+          };
+        });
+      },
+
+      prompt(title, message, defaultValue = '', icon = 'fa-solid fa-pen') {
+        return new Promise((resolve) => {
+          this.icon.className = icon;
+          this.title.textContent = title;
+          this.body.textContent = message;
+          this.input.style.display = 'block';
+          this.input.value = defaultValue;
+          this.cancelBtn.style.display = 'inline-flex';
+          this.okBtn.textContent = 'Save';
+          this.overlay.style.display = 'flex';
+          setTimeout(() => this.input.focus(), 50);
+
+          this.cancelBtn.onclick = () => {
+            this.overlay.style.display = 'none';
+            resolve(null);
+          };
+          this.okBtn.onclick = () => {
+            const val = this.input.value;
+            this.overlay.style.display = 'none';
+            resolve(val);
+          };
+        });
+      }
+    };
+
+    function createCustomDropdown(options, initialValue, onChange) {
+      let currentVal = initialValue || options[0].value;
+      const wrap = document.createElement('div');
+      wrap.className = 'custom-select-wrap';
+
+      const trigger = document.createElement('div');
+      trigger.className = 'custom-select-trigger';
+
+      const valSpan = document.createElement('span');
+      valSpan.className = 'custom-select-val';
+
+      const arrow = document.createElement('i');
+      arrow.className = 'fa-solid fa-chevron-down custom-select-arrow';
+
+      trigger.appendChild(valSpan);
+      trigger.appendChild(arrow);
+
+      const optionsMenu = document.createElement('div');
+      optionsMenu.className = 'custom-select-options';
+
+      function updateTrigger(val) {
+        const found = options.find(o => o.value === val) || options[0];
+        valSpan.innerHTML = `<i class="${found.icon}"></i> ${escapeHtml(found.label)}`;
+      }
+
+      options.forEach(opt => {
+        const item = document.createElement('div');
+        item.className = `custom-select-opt ${opt.value === currentVal ? 'selected' : ''}`;
+        item.innerHTML = `<i class="${opt.icon}"></i> <span>${escapeHtml(opt.label)}</span>`;
+        item.onclick = (e) => {
+          e.stopPropagation();
+          currentVal = opt.value;
+          updateTrigger(currentVal);
+          wrap.querySelectorAll('.custom-select-opt').forEach(o => o.classList.remove('selected'));
+          item.classList.add('selected');
+          wrap.classList.remove('active');
+          if (onChange) onChange(currentVal);
+        };
+        optionsMenu.appendChild(item);
+      });
+
+      trigger.onclick = (e) => {
+        e.stopPropagation();
+        const wasActive = wrap.classList.contains('active');
+        document.querySelectorAll('.custom-select-wrap').forEach(w => w.classList.remove('active'));
+        if (!wasActive) wrap.classList.add('active');
+      };
+
+      updateTrigger(currentVal);
+      wrap.appendChild(trigger);
+      wrap.appendChild(optionsMenu);
+
+      wrap.getValue = () => currentVal;
+      wrap.setValue = (newVal) => {
+        currentVal = newVal;
+        updateTrigger(newVal);
+        wrap.querySelectorAll('.custom-select-opt').forEach(o => {
+          o.classList.toggle('selected', o.textContent.trim().includes(newVal));
+        });
+      };
+
+      return wrap;
+    }
+
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.custom-select-wrap').forEach(w => w.classList.remove('active'));
+    });
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      document.getElementById(`tab-${tabId}`).classList.add('active');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = msg;
+      toast.style.display = 'inline-flex';
+      setTimeout(() => { toast.style.display = 'none'; }, 3200);
+    }
+
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/check_auth');
+        const json = await res.json();
+        if (json.ok) {
+          document.getElementById('authModal').style.display = 'none';
+          loadPanelData();
+        } else {
+          document.getElementById('authModal').style.display = 'flex';
+        }
+      } catch (e) {
+        document.getElementById('authModal').style.display = 'flex';
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const password = document.getElementById('adminPasswordInput').value;
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        const json = await res.json();
+        if (json.ok) {
+          document.getElementById('authModal').style.display = 'none';
+          loadPanelData();
+          showToast('Authenticated as Admin');
+        } else {
+          CustomModal.alert('Login Failed', 'Incorrect admin password. Please try again.', 'fa-solid fa-lock');
+        }
+      } catch (err) {
+        CustomModal.alert('Error', 'Login failed: ' + err);
+      }
+    }
+
+    async function syncFromDiscord() {
+      const discordId = document.getElementById('inpDiscordId').value.trim();
+      if (!discordId) {
+        CustomModal.alert('Missing ID', 'Please enter a Discord User ID first.', 'fa-brands fa-discord');
+        return;
+      }
+      try {
+        showToast('Fetching Discord Profile...');
+        const res = await fetch(`/api/discord/${discordId}`);
+        const data = await res.json();
+        if (!data.ok) {
+          CustomModal.alert('Lookup Failed', 'Could not fetch Discord info for ID: ' + discordId);
+          return;
+        }
+
+        document.getElementById('discordPreviewAvatar').src = data.avatar_url;
+        document.getElementById('discordPreviewName').innerHTML = `
+          <span>${escapeHtml(data.display_name || data.username)}</span>
+          <span style="font-size:0.75rem; padding: 2px 8px; border-radius: 99px; background: rgba(35,165,90,0.2); color:#23a55a; font-weight:600;">${data.status || 'offline'}</span>
+        `;
+        document.getElementById('discordPreviewHandle').textContent = `@${data.username} • ID: ${data.id}`;
+
+        const nameInput = document.getElementById('inpDisplayName');
+        if (nameInput && data.display_name) nameInput.value = data.display_name;
+
+        const handleInput = document.getElementById('inpCustomHandle');
+        if (handleInput && data.username) {
+          const cleanUser = data.username.replace(/^@+/, '');
+          handleInput.value = `@${cleanUser}`;
+        }
+
+        const avatarInput = document.getElementById('inpCustomAvatarUrl');
+        if (avatarInput && data.avatar_url) avatarInput.value = data.avatar_url;
+
+        const accentInput = document.getElementById('inpAccentColor');
+        if (accentInput && data.accent_color) accentInput.value = data.accent_color;
+
+        const bgInput = document.getElementById('inpBackgroundUrl');
+        if (bgInput && data.banner_url) bgInput.value = data.banner_url;
+
+        const previewWrap = document.getElementById('discordStatusLivePreview');
+        const previewText = document.getElementById('discordStatusLiveText');
+        if (data.custom_status && (data.custom_status.text || data.custom_status.emoji_name || data.custom_status.emoji_url)) {
+          previewWrap.style.display = 'block';
+          let emHtml = '';
+          if (data.custom_status.emoji_url) {
+            emHtml = `<img src="${data.custom_status.emoji_url}" style="width:14px; height:14px; vertical-align:middle;"> `;
+          } else if (data.custom_status.emoji_name) {
+            emHtml = `${data.custom_status.emoji_name} `;
+          }
+          previewText.innerHTML = `${emHtml}${escapeHtml(data.custom_status.text || 'Active')}`;
+        } else {
+          previewText.textContent = `${data.status || 'offline'} (no custom status)`;
+        }
+
+        await saveProfile();
+        showToast(`Synced full theme for @${data.username.replace(/^@+/, '')} (Avatar, Banner, Accent, Name)!`);
+      } catch (err) {
+        CustomModal.alert('Error', 'Failed to sync Discord info: ' + err);
+      }
+    }
+
+    let fontDropdown = null;
+
+    function populateFormWithData(data) {
+      if (!data) return;
+      document.getElementById(inpDisplayName).value = data.display_name || ;
+      const cleanHandle = (data.custom_handle || ).replace(/^@+/, );
+      document.getElementById(inpCustomHandle).value = cleanHandle ? `@${cleanHandle}` : ;
+      document.getElementById(inpDiscordId).value = data.discord_id || ;
+      document.getElementById(inpCustomAvatarUrl).value = data.custom_avatar_url || ;
+      document.getElementById(inpUseDiscordStatus).checked = data.use_discord_status !== false;
+      document.getElementById(inpCustomStatus).value = data.custom_status || ;
+      document.getElementById(inpStatusEmoji).value = data.status_emoji || ;
+      toggleStatusInputs();
+
+      document.getElementById(inpBio).value = data.bio || ;
+
+      document.getElementById(inpMusicTitle).value = data.music_title || ;
+      document.getElementById(inpMusicUrl).value = data.music_url || ;
+      document.getElementById(inpMusicAutoplay).checked = !!data.music_autoplay;
+      const vol = data.music_volume !== undefined ? data.music_volume : 80;
+      document.getElementById(inpMusicVolume).value = vol;
+      document.getElementById(musicVolumeDisplay).textContent = `${vol}%`;
+      const pAudio = document.getElementById(panelAudioElement);
+      if (pAudio) pAudio.volume = vol / 100;
+
+      document.getElementById(inpBackgroundUrl).value = data.background_url || ;
+      document.getElementById(inpBackgroundOpacity).value = data.background_opacity ?? 100;
+
+      const accent = data.accent_color || #d4b896;
+      document.getElementById(inpAccentColor).value = accent;
+      document.getElementById(inpAccentColorPicker).value = (accent.startsWith(#) && accent.length === 7) ? accent : #d4b896;
+
+      const bg = data.bg_color || #08080a;
+      document.getElementById(inpBgColor).value = bg;
+      document.getElementById(inpBgColorPicker).value = (bg.startsWith(#) && bg.length === 7) ? bg : #08080a;
+
+      document.getElementById(inpCustomCursorUrl).value = data.custom_cursor_url || ;
+      document.getElementById(inpCursorSize).value = data.cursor_size || 32;
+      document.getElementById(cursorSizeDisplay).textContent = (data.cursor_size || 32) + px;
+      document.getElementById(inpHideSystemCursor).checked = data.hide_system_cursor !== false;
+
+      selectedFont = data.font_family || Inter;
+      const fontContainer = document.getElementById(fontSelectContainer);
+      fontContainer.innerHTML = ;
+      fontDropdown = createCustomDropdown(fontOptions, selectedFont, (val) => { selectedFont = val; });
+      fontContainer.appendChild(fontDropdown);
+
+      const eff = data.effects || {};
+      document.getElementById(effSakura).checked = !!eff.sakura_leaves;
+      document.getElementById(effTyping).checked = !!eff.typing_animation;
+      document.getElementById(effParticles).checked = !!eff.particles;
+      document.getElementById(effTilt).checked = !!eff.tilt_card;
+      document.getElementById(effCursor).checked = !!eff.cursor_glow;
+
+      renderLinks(data.links || []);
+      renderBadges(data.badges || []);
+
+      activeBubbleBundle = data.bubble_animation_bundle || classic;
+      sandboxPreviewBundle = activeBubbleBundle;
+      renderBubbleBundles();
+
+      updateAudioPlayerPreview(data.music_url || );
+    }
+
+    async function loadPanelData() {
+      try {
+        const res = await fetch(/api/profile);
+        currentData = await res.json();
+        populateFormWithData(currentData);
+        loadPresets();
+
+        updateAudioPlayerPreview(currentData.music_url || '');
+        loadHostedAudioList();
+        loadAllUploadsList();
+
+        if (currentData.discord_id) {
+          fetch(`/api/discord/${currentData.discord_id}`).then(r => r.json()).then(data => {
+            if (data && data.ok) {
+              document.getElementById('discordPreviewAvatar').src = data.avatar_url;
+              const sAv = document.getElementById('sandboxAvatar');
+              if (sAv) sAv.src = data.avatar_url;
+              document.getElementById('discordPreviewName').innerHTML = `
+                <span>${escapeHtml(data.display_name || data.username)}</span>
+                <span style="font-size:0.75rem; padding: 2px 8px; border-radius: 99px; background: rgba(35,165,90,0.2); color:#23a55a; font-weight:600;">${data.status || 'offline'}</span>
+              `;
+              document.getElementById('discordPreviewHandle').textContent = `@${data.username} • ID: ${data.id}`;
+            }
+          }).catch(()=>{});
+        }
+      } catch (e) {
+        console.error('Failed to load profile data:', e);
+      }
+    }
+
+    function renderLinks(links) {
+      const container = document.getElementById('linksContainer');
+      container.innerHTML = '';
+      links.forEach((l) => {
+        const row = document.createElement('div');
+        row.className = 'link-row';
+
+        const inpLabel = document.createElement('input');
+        inpLabel.type = 'text';
+        inpLabel.className = 'link-label';
+        inpLabel.value = l.label || '';
+        inpLabel.placeholder = 'Label (e.g. Discord)';
+        inpLabel.style.flex = '1';
+
+        const inpUrl = document.createElement('input');
+        inpUrl.type = 'text';
+        inpUrl.className = 'link-url';
+        inpUrl.value = l.url || '';
+        inpUrl.placeholder = 'URL (https://...)';
+        inpUrl.style.flex = '2';
+
+        const iconDropdown = createCustomDropdown(linkIconOptions, l.icon || 'link');
+        iconDropdown.style.width = '160px';
+
+        const btnDel = document.createElement('button');
+        btnDel.className = 'btn btn-danger';
+        btnDel.setAttribute('data-tooltip', 'Delete link');
+        btnDel.innerHTML = '<i class="fa-solid fa-trash"></i>';
+        btnDel.onclick = () => row.remove();
+
+        row.appendChild(inpLabel);
+        row.appendChild(inpUrl);
+        row.appendChild(iconDropdown);
+        row.appendChild(btnDel);
+
+        row.getLinkData = () => ({
+          label: inpLabel.value,
+          url: inpUrl.value,
+          icon: iconDropdown.getValue()
+        });
+
+        container.appendChild(row);
+      });
+    }
+
+    function addLinkRow() {
+      const container = document.getElementById('linksContainer');
+      const row = document.createElement('div');
+      row.className = 'link-row';
+
+      const inpLabel = document.createElement('input');
+      inpLabel.type = 'text';
+      inpLabel.className = 'link-label';
+      inpLabel.placeholder = 'Label (e.g. Telegram)';
+      inpLabel.style.flex = '1';
+
+      const inpUrl = document.createElement('input');
+      inpUrl.type = 'text';
+      inpUrl.className = 'link-url';
+      inpUrl.placeholder = 'https://...';
+      inpUrl.style.flex = '2';
+
+      const iconDropdown = createCustomDropdown(linkIconOptions, 'telegram');
+      iconDropdown.style.width = '160px';
+
+      const btnDel = document.createElement('button');
+      btnDel.className = 'btn btn-danger';
+      btnDel.setAttribute('data-tooltip', 'Delete link');
+      btnDel.innerHTML = '<i class="fa-solid fa-trash"></i>';
+      btnDel.onclick = () => row.remove();
+
+      row.appendChild(inpLabel);
+      row.appendChild(inpUrl);
+      row.appendChild(iconDropdown);
+      row.appendChild(btnDel);
+
+      row.getLinkData = () => ({
+        label: inpLabel.value,
+        url: inpUrl.value,
+        icon: iconDropdown.getValue()
+      });
+
+      container.appendChild(row);
+    }
+
+    function renderBadges(badges) {
+      const container = document.getElementById('badgesList');
+      container.innerHTML = '';
+      badges.forEach((b) => {
+        const row = document.createElement('div');
+        row.className = 'link-row';
+
+        const inpName = document.createElement('input');
+        inpName.type = 'text';
+        inpName.className = 'badge-name';
+        inpName.value = b.name || '';
+        inpName.placeholder = 'Badge Name';
+        inpName.style.flex = '1';
+
+        const iconDropdown = createCustomDropdown(badgeIconOptions, b.icon || 'star');
+        iconDropdown.style.width = '170px';
+
+        const inpColor = document.createElement('input');
+        inpColor.type = 'text';
+        inpColor.className = 'badge-color';
+        inpColor.value = b.color || '#d4b896';
+        inpColor.placeholder = '#d4b896';
+        inpColor.style.width = '100px';
+
+        const btnDel = document.createElement('button');
+        btnDel.className = 'btn btn-danger';
+        btnDel.setAttribute('data-tooltip', 'Delete badge');
+        btnDel.innerHTML = '<i class="fa-solid fa-trash"></i>';
+        btnDel.onclick = () => row.remove();
+
+        row.appendChild(inpName);
+        row.appendChild(iconDropdown);
+        row.appendChild(inpColor);
+        row.appendChild(btnDel);
+
+        row.getBadgeData = () => ({
+          name: inpName.value,
+          icon: iconDropdown.getValue(),
+          color: inpColor.value
+        });
+
+        container.appendChild(row);
+      });
+    }
+
+    function addBadgeRow() {
+      const container = document.getElementById('badgesList');
+      const row = document.createElement('div');
+      row.className = 'link-row';
+
+      const inpName = document.createElement('input');
+      inpName.type = 'text';
+      inpName.className = 'badge-name';
+      inpName.placeholder = 'Badge Name (e.g. VIP)';
+      inpName.style.flex = '1';
+
+      const iconDropdown = createCustomDropdown(badgeIconOptions, 'crown');
+      iconDropdown.style.width = '170px';
+
+      const inpColor = document.createElement('input');
+      inpColor.type = 'text';
+      inpColor.className = 'badge-color';
+      inpColor.value = '#d4b896';
+      inpColor.placeholder = '#d4b896';
+      inpColor.style.width = '100px';
+
+      const btnDel = document.createElement('button');
+      btnDel.className = 'btn btn-danger';
+      btnDel.setAttribute('data-tooltip', 'Delete badge');
+      btnDel.innerHTML = '<i class="fa-solid fa-trash"></i>';
+      btnDel.onclick = () => row.remove();
+
+      row.appendChild(inpName);
+      row.appendChild(iconDropdown);
+      row.appendChild(inpColor);
+      row.appendChild(btnDel);
+
+      row.getBadgeData = () => ({
+        name: inpName.value,
+        icon: iconDropdown.getValue(),
+        color: inpColor.value
+      });
+
+      container.appendChild(row);
+    }
+
+    function onAccentColorPicker(val) {
+      document.getElementById('inpAccentColor').value = val;
+    }
+    function onAccentColorInput(val) {
+      if (val.startsWith('#') && (val.length === 4 || val.length === 7)) {
+        document.getElementById('inpAccentColorPicker').value = val;
+      }
+    }
+    function onBgColorPicker(val) {
+      document.getElementById('inpBgColor').value = val;
+    }
+    function onBgColorInput(val) {
+      if (val.startsWith('#') && (val.length === 4 || val.length === 7)) {
+        document.getElementById('inpBgColorPicker').value = val;
+      }
+    }
+    function setColorTheme(accent, bg, enableSakura) {
+      document.getElementById('inpAccentColor').value = accent;
+      document.getElementById('inpAccentColorPicker').value = accent;
+      document.getElementById('inpBgColor').value = bg;
+      document.getElementById('inpBgColorPicker').value = bg;
+      if (enableSakura !== undefined) {
+        document.getElementById('effSakura').checked = enableSakura;
+      }
+      showToast(`Color Theme applied: ${accent}`);
+    }
+
+    function getFormProfilePayload() {
+      const linkRows = document.querySelectorAll('#linksContainer .link-row');
+      const links = Array.from(linkRows).map(r => r.getLinkData ? r.getLinkData() : null).filter(Boolean);
+
+      const badgeRows = document.querySelectorAll('#badgesList .link-row');
+      const badges = Array.from(badgeRows).map(r => r.getBadgeData ? r.getBadgeData() : null).filter(Boolean);
+
+      return {
+        display_name: document.getElementById('inpDisplayName').value,
+        custom_handle: document.getElementById('inpCustomHandle').value.replace(/^@+/, ''),
+        discord_id: document.getElementById('inpDiscordId').value,
+        custom_avatar_url: document.getElementById('inpCustomAvatarUrl').value,
+        use_discord_status: document.getElementById('inpUseDiscordStatus').checked,
+        custom_status: document.getElementById('inpCustomStatus').value,
+        status_emoji: document.getElementById('inpStatusEmoji').value,
+        bio: document.getElementById('inpBio').value,
+
+        music_title: document.getElementById('inpMusicTitle').value,
+        music_url: document.getElementById('inpMusicUrl').value,
+        music_autoplay: document.getElementById('inpMusicAutoplay').checked,
+        music_volume: parseInt(document.getElementById('inpMusicVolume').value, 10) || 80,
+
+        background_url: document.getElementById('inpBackgroundUrl').value,
+        background_opacity: parseInt(document.getElementById('inpBackgroundOpacity').value, 10),
+        bg_color: document.getElementById('inpBgColor').value || '#08080a',
+        accent_color: document.getElementById('inpAccentColor').value || '#d4b896',
+        font_family: fontDropdown ? fontDropdown.getValue() : selectedFont,
+
+        custom_cursor_url: document.getElementById('inpCustomCursorUrl').value,
+        cursor_size: parseInt(document.getElementById('inpCursorSize').value, 10) || 32,
+        hide_system_cursor: document.getElementById('inpHideSystemCursor').checked,
+        bubble_animation_bundle: activeBubbleBundle,
+
+        effects: {
+          sakura_leaves: document.getElementById('effSakura').checked,
+          typing_animation: document.getElementById('effTyping').checked,
+          particles: document.getElementById('effParticles').checked,
+          tilt_card: document.getElementById('effTilt').checked,
+          cursor_glow: document.getElementById('effCursor').checked
+        },
+
+        links: links,
+        badges: badges
+      };
+    }
+
+    let currentEditingPresetId = null;
+    let currentEditingPresetName = '';
+    let currentEditingPresetSlug = '';
+
+    async function loadPresets() {
+      try {
+        const res = await fetch('/api/presets');
+        const json = await res.json();
+        const container = document.getElementById('presetsList');
+        if (!container) return;
+        container.innerHTML = '';
+        if (json.presets && json.presets.length) {
+          json.presets.forEach(p => {
+            const slug = (p.slug || p.name || 'preset').toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'preset';
+            const isMain = slug === 'chony' || slug === 'main' || slug === 'root';
+            const subDomain = isMain ? 'chony.info' : `${slug}.chony.info`;
+            const subUrl = `http://${subDomain}`;
+            const testUrl = `/?preset=${slug}`;
+            const isCurrentlyEditing = (currentEditingPresetId === p.id);
+
+            const row = document.createElement('div');
+            row.className = 'link-row';
+            row.style.display = 'flex';
+            row.style.alignItems = 'center';
+            row.style.justifyContent = 'space-between';
+            row.style.gap = '10px';
+            if (isCurrentlyEditing) {
+              row.style.border = '1px solid var(--accent)';
+              row.style.background = 'rgba(212,184,150,0.08)';
+            }
+            row.innerHTML = `
+              <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <i class="fa-solid fa-bookmark" style="color: var(--accent);"></i>
+                  <span style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.92rem;">${escapeHtml(p.name)}</span>
+                  ${isCurrentlyEditing ? '<span style="font-size: 0.7rem; background: var(--accent); color: #000; padding: 2px 6px; border-radius: 4px; font-weight: 700;">CURRENTLY EDITING</span>' : ''}
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 0.76rem; font-family: 'JetBrains Mono', monospace;">
+                  <a href="${subUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: none; display: flex; align-items: center; gap: 4px; background: rgba(212,184,150,0.1); padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(212,184,150,0.25);" data-tooltip="Open ${subDomain}">
+                    <i class="fa-solid fa-globe"></i> ${subDomain}
+                  </a>
+                  <a href="${testUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--text-muted); text-decoration: none;" data-tooltip="Direct test link via ?preset=${slug}">
+                    (${testUrl})
+                  </a>
+                </div>
+              </div>
+              <div style="display: flex; gap: 6px; flex-shrink: 0;">
+                <button type="button" class="btn btn-secondary" onclick="startEditingPreset('${p.id}')" data-tooltip="Load snapshot into form to edit" style="padding: 6px 11px; font-size: 0.78rem;"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                <button type="button" class="btn btn-secondary" onclick="updatePresetSnapshot('${p.id}')" data-tooltip="Overwrite preset snapshot with current form values" style="padding: 6px 11px; font-size: 0.78rem;"><i class="fa-solid fa-floppy-disk"></i> Save to This</button>
+                <button type="button" class="btn btn-primary" onclick="applyPreset('${p.id}')" data-tooltip="Apply this snapshot to main site" style="padding: 6px 12px; font-size: 0.78rem;"><i class="fa-solid fa-check"></i> Apply</button>
+                <button type="button" class="btn btn-secondary" onclick="editPresetSlug('${p.id}', '${escapeHtml(slug)}')" data-tooltip="Set Subdomain Slug (e.g. alt)" style="padding: 6px 10px; font-size: 0.78rem;"><i class="fa-solid fa-link"></i></button>
+                <button type="button" class="btn btn-secondary" onclick="renamePreset('${p.id}', '${escapeHtml(p.name)}')" data-tooltip="Rename preset" style="padding: 6px 10px; font-size: 0.78rem;"><i class="fa-solid fa-pen"></i></button>
+                <button type="button" class="btn btn-danger" onclick="deletePreset('${p.id}')" data-tooltip="Delete preset" style="padding: 6px 10px; font-size: 0.78rem;"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            `;
+            container.appendChild(row);
+          });
+        } else {
+          container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.88rem; padding: 10px 0;">No saved presets yet. Click "Save Current as Preset" above to create one!</p>';
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function startEditingPreset(id) {
+      try {
+        const res = await fetch('/api/presets');
+        const json = await res.json();
+        const p = (json.presets || []).find(item => item.id === id);
+        if (!p) {
+          CustomModal.alert('Error', 'Preset not found');
+          return;
+        }
+
+        currentEditingPresetId = p.id;
+        currentEditingPresetName = p.name;
+        currentEditingPresetSlug = p.slug || '';
+
+        if (p.snapshot && typeof p.snapshot === 'object') {
+          populateFormWithData(p.snapshot);
+        }
+
+        const banner = document.getElementById('editingPresetBanner');
+        if (banner) {
+          document.getElementById('editingPresetName').textContent = p.name;
+          const slugText = p.slug ? `${p.slug}.chony.info` : 'No subdomain set';
+          document.getElementById('editingPresetSlugBadge').textContent = slugText;
+          banner.style.display = 'flex';
+        }
+
+        switchTab('profile');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        await loadPresets();
+        showToast(`Now editing preset "${p.name}". Make changes and click "Save to Preset"!`);
+      } catch (err) {
+        CustomModal.alert('Error', 'Failed to load preset: ' + err);
+      }
+    }
+
+    async function saveCurrentToEditingPreset() {
+      if (!currentEditingPresetId) {
+        CustomModal.alert('Notice', 'No preset is currently selected for editing.');
+        return;
+      }
+      const payload = getFormProfilePayload();
+      try {
+        const res = await fetch(`/api/presets/${currentEditingPresetId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ snapshot: payload })
+        });
+        const json = await res.json();
+        if (json.ok) {
+          showToast(`Saved changes to preset "${currentEditingPresetName}"!`);
+          await loadPresets();
+        } else {
+          CustomModal.alert('Error', json.error || 'Failed to update preset');
+        }
+      } catch (err) {
+        CustomModal.alert('Error', 'Failed to update preset: ' + err);
+      }
+    }
+
+    async function updatePresetSnapshot(id) {
+      const payload = getFormProfilePayload();
+      try {
+        const res = await fetch(`/api/presets/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ snapshot: payload })
+        });
+        const json = await res.json();
+        if (json.ok) {
+          showToast('Updated preset with current form snapshot!');
+          await loadPresets();
+        } else {
+          CustomModal.alert('Error', json.error || 'Failed to update preset');
+        }
+      } catch (err) {
+        CustomModal.alert('Error', 'Failed to update preset: ' + err);
+      }
+    }
+
+    async function applyEditingPresetToMain() {
+      if (!currentEditingPresetId) return;
+      await applyPreset(currentEditingPresetId);
+    }
+
+    async function exitPresetEditingMode() {
+      currentEditingPresetId = null;
+      currentEditingPresetName = '';
+      currentEditingPresetSlug = '';
+      const banner = document.getElementById('editingPresetBanner');
+      if (banner) banner.style.display = 'none';
+      await loadPanelData();
+      await loadPresets();
+      showToast('Exited preset editing mode. Main profile loaded.');
+    }
+
+    async function editPresetSlug(id, currentSlug) {
+      const slug = await CustomModal.prompt('Subdomain Routing', 'Enter the subdomain slug for this preset (e.g. "alt" for alt.chony.info):', currentSlug);
+      if (!slug || !slug.trim()) return;
+      const cleanSlug = slug.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+      if (!cleanSlug) return;
+      try {
+        const res = await fetch(`/api/presets/${id}/slug`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug: cleanSlug })
+        });
+        const json = await res.json();
+        if (json.ok) {
+          await loadPresets();
+          showToast(`Preset subdomain set to ${cleanSlug}.chony.info!`);
+        } else {
+          CustomModal.alert('Error', json.error || 'Failed to update subdomain slug');
+        }
+      } catch (err) {
+        CustomModal.alert('Error', 'Failed to update slug: ' + err);
+      }
+    }
+
+    async function createPreset() {
+      const name = await CustomModal.prompt('Save Preset', 'Enter a name for this theme snapshot:', 'balright');
+      if (!name || !name.trim()) return;
+      const defaultSlug = name.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '') || 'preset';
+      const slug = await CustomModal.prompt('Subdomain Slug', `Subdomain address (e.g. "${defaultSlug}" gives ${defaultSlug}.chony.info):`, defaultSlug);
+      const cleanSlug = (slug || defaultSlug).trim().toLowerCase().replace(/[^a-z0-9_-]/g, '') || defaultSlug;
+
+      const payload = getFormProfilePayload();
+      try {
+        const res = await fetch('/api/presets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: name.trim(),
+            slug: cleanSlug,
+            snapshot: payload
+          })
+        });
+        const json = await res.json();
+        if (json.ok) {
+          await loadPresets();
+          showToast(`Preset "${name.trim()}" created at ${cleanSlug}.chony.info!`);
+        } else {
+          CustomModal.alert('Error', json.error || 'Failed to save preset');
+        }
+      } catch (err) {
+        CustomModal.alert('Error', 'Failed to save preset: ' + err);
+      }
+    }
+
+    async function applyPreset(id) {
+      try {
+        const res = await fetch(`/api/presets/${id}/apply`, { method: 'POST' });
+        const json = await res.json();
+        if (json.ok) {
+          await loadPanelData();
+          showToast('Preset snapshot loaded & applied!');
+        } else {
+          CustomModal.alert('Error', json.error || 'Failed to apply preset');
+        }
+      } catch (err) {
+        CustomModal.alert('Error', 'Failed to apply preset: ' + err);
+      }
+    }
+
+    async function renamePreset(id, currentName) {
+      const name = await CustomModal.prompt('Rename Preset', 'Enter new name:', currentName);
+      if (!name || !name.trim()) return;
+      try {
+        const res = await fetch(`/api/presets/${id}/rename`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: name.trim() })
+        });
+        const json = await res.json();
+        if (json.ok) {
+          await loadPresets();
+          showToast('Preset renamed!');
+        } else {
+          CustomModal.alert('Error', json.error || 'Failed to rename preset');
+        }
+      } catch (err) {
+        CustomModal.alert('Error', 'Failed to rename preset: ' + err);
+      }
+    }
+
+    async function duplicatePreset(id) {
+      try {
+        const res = await fetch(`/api/presets/${id}/duplicate`, { method: 'POST' });
+        const json = await res.json();
+        if (json.ok) {
+          await loadPresets();
+          showToast('Preset duplicated!');
+        } else {
+          CustomModal.alert('Error', json.error || 'Failed to duplicate preset');
+        }
+      } catch (err) {
+        CustomModal.alert('Error', 'Failed to duplicate preset: ' + err);
+      }
+    }
+
+    async function deletePreset(id) {
+      const confirmed = await CustomModal.confirm('Delete Preset', 'Are you sure you want to permanently delete this preset?');
+      if (!confirmed) return;
+      try {
+        const res = await fetch(`/api/presets/${id}`, { method: 'DELETE' });
+        const json = await res.json();
+        if (json.ok) {
+          await loadPresets();
+          showToast('Preset deleted');
+        } else {
+          CustomModal.alert('Error', json.error || 'Failed to delete preset');
+        }
+      } catch (err) {
+        CustomModal.alert('Error', 'Failed to delete preset: ' + err);
+      }
+    }
+
+    let hostedAudioFiles = [];
+    let allUploadedFiles = [];
+    let currentUploadFilter = 'all';
+
+    async function handleMusicFileUpload(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      const progressEl = document.getElementById('audioUploadProgress');
+      if (progressEl) progressEl.style.display = 'block';
+
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const json = await res.json();
+        if (json.ok) {
+          document.getElementById('inpMusicUrl').value = json.url;
+
+          const titleInput = document.getElementById('inpMusicTitle');
+          if (!titleInput.value || titleInput.value.includes('e.g.')) {
+            const rawBase = file.name.replace(/\.[^/.]+$/, "");
+            titleInput.value = rawBase.replace(/[_]/g, ' ');
+          }
+
+          updateAudioPlayerPreview(json.url);
+          loadHostedAudioList();
+          loadAllUploadsList();
+          showToast(`Audio hosted: ${file.name}`);
+        } else {
+          CustomModal.alert('Upload Error', json.error || 'Failed to upload audio file');
+        }
+      } catch (err) {
+        CustomModal.alert('Upload Error', 'Failed to upload audio: ' + err);
+      } finally {
+        if (progressEl) progressEl.style.display = 'none';
+        input.value = '';
+      }
+    }
+
+    async function loadHostedAudioList() {
+      const container = document.getElementById('hostedAudioList');
+      if (!container) return;
+      try {
+        const res = await fetch('/api/uploads');
+        const json = await res.json();
+        if (json.ok && json.files) {
+          hostedAudioFiles = json.files.filter(f => f.kind === 'audio' || ['mp3','wav','ogg','m4a','flac'].includes(f.ext));
+          renderHostedAudioList();
+        }
+      } catch (e) {
+        container.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem;">Failed to load audio library.</div>';
+      }
+    }
+
+    function renderHostedAudioList() {
+      const container = document.getElementById('hostedAudioList');
+      if (!container) return;
+      container.innerHTML = '';
+      if (!hostedAudioFiles.length) {
+        container.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding:12px 6px;">No audio tracks hosted yet. Drag & drop an MP3/WAV file above to upload!</div>';
+        return;
+      }
+      const currentUrl = document.getElementById('inpMusicUrl').value;
+      hostedAudioFiles.forEach(f => {
+        const card = document.createElement('div');
+        const isActive = (currentUrl === f.url);
+        card.className = `audio-item-card ${isActive ? 'active-track' : ''}`;
+        const sizeMb = (f.size / 1024 / 1024).toFixed(2);
+        card.innerHTML = `
+          <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
+            <div style="width:34px; height:34px; border-radius:8px; background:rgba(212,184,150,0.12); color:var(--accent); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <i class="fa-solid fa-music"></i>
+            </div>
+            <div style="min-width:0; flex:1;">
+              <div style="font-weight:600; font-size:0.86rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(f.filename)}</div>
+              <div style="font-size:0.75rem; color:var(--text-muted);">${sizeMb} MB • .${escapeHtml(f.ext)}</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:6px; flex-shrink:0;">
+            <button type="button" class="btn btn-secondary" style="padding:6px 10px; font-size:0.78rem;" onclick="playHostedAudioTrack('${f.url}', '${escapeHtml(f.filename)}')"><i class="fa-solid fa-play"></i></button>
+            <button type="button" class="btn ${isActive ? 'btn-secondary' : 'btn-primary'}" style="padding:6px 12px; font-size:0.78rem;" onclick="selectHostedAudioTrack('${f.url}', '${escapeHtml(f.filename)}')">${isActive ? 'Active' : 'Use as Active'}</button>
+            <button type="button" class="btn btn-danger" style="padding:6px 10px; font-size:0.78rem;" onclick="deleteHostedFile('${f.filename}')"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function selectHostedAudioTrack(url, filename) {
+      document.getElementById('inpMusicUrl').value = url;
+      const titleInput = document.getElementById('inpMusicTitle');
+      if (!titleInput.value || titleInput.value.includes('e.g.')) {
+        const clean = filename.replace(/\.[^/.]+$/, "").replace(/[_]/g, ' ');
+        titleInput.value = clean;
+      }
+      updateAudioPlayerPreview(url);
+      renderHostedAudioList();
+      showToast('Selected audio track');
+    }
+
+    function playHostedAudioTrack(url, filename) {
+      const audioEl = document.getElementById('panelAudioElement');
+      const icon = document.getElementById('iconPreviewPlay');
+      if (audioEl.src.includes(url) && !audioEl.paused) {
+        audioEl.pause();
+        if (icon) icon.className = 'fa-solid fa-play';
+      } else {
+        audioEl.src = url;
+        audioEl.play().catch(() => {});
+        if (icon) icon.className = 'fa-solid fa-pause';
+        document.getElementById('previewTrackTitle').textContent = filename.replace(/\.[^/.]+$/, "").replace(/[_]/g, ' ');
+        document.getElementById('previewTrackUrl').textContent = url;
+      }
+    }
+
+    function toggleAudioPreview() {
+      const url = document.getElementById('inpMusicUrl').value;
+      const audioEl = document.getElementById('panelAudioElement');
+      const icon = document.getElementById('iconPreviewPlay');
+      if (!url) {
+        CustomModal.alert('No Audio', 'Please select or upload an audio file first.');
+        return;
+      }
+      if (!audioEl.src.includes(url)) {
+        audioEl.src = url;
+      }
+      if (audioEl.paused) {
+        audioEl.play().catch(e => CustomModal.alert('Audio Error', 'Cannot play audio: ' + e));
+        if (icon) icon.className = 'fa-solid fa-pause';
+      } else {
+        audioEl.pause();
+        if (icon) icon.className = 'fa-solid fa-play';
+      }
+    }
+
+    function updateAudioPlayerPreview(url) {
+      const currentUrl = url !== undefined ? url : document.getElementById('inpMusicUrl').value;
+      const currentTitle = document.getElementById('inpMusicTitle').value;
+      const titleEl = document.getElementById('previewTrackTitle');
+      const urlEl = document.getElementById('previewTrackUrl');
+      if (titleEl) titleEl.textContent = currentTitle || (currentUrl ? currentUrl.split('/').pop() : 'No Audio Loaded');
+      if (urlEl) urlEl.textContent = currentUrl || 'Upload a song above to host and play';
+      renderHostedAudioList();
+    }
+
+    function onAudioPreviewEnded() {
+      const icon = document.getElementById('iconPreviewPlay');
+      if (icon) icon.className = 'fa-solid fa-play';
+    }
+
+    function onMusicVolumeChange(val) {
+      document.getElementById('musicVolumeDisplay').textContent = `${val}%`;
+      const pAudio = document.getElementById('panelAudioElement');
+      if (pAudio) pAudio.volume = val / 100;
+    }
+
+    function setVolumePreset(val) {
+      document.getElementById('inpMusicVolume').value = val;
+      onMusicVolumeChange(val);
+      showToast(`Default volume set to ${val}%`);
+    }
+
+    async function loadAllUploadsList() {
+      const container = document.getElementById('allUploadsList');
+      if (!container) return;
+      try {
+        const res = await fetch('/api/uploads');
+        const json = await res.json();
+        if (json.ok && json.files) {
+          allUploadedFiles = json.files;
+          renderAllUploadsList();
+        }
+      } catch (e) {
+        container.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem;">Failed to load server files.</div>';
+      }
+    }
+
+    function filterUploads(kind, btn) {
+      currentUploadFilter = kind;
+      document.querySelectorAll('.media-filter-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderAllUploadsList();
+    }
+
+    function renderAllUploadsList() {
+      const container = document.getElementById('allUploadsList');
+      if (!container) return;
+      container.innerHTML = '';
+      const list = (currentUploadFilter === 'all') ? allUploadedFiles : allUploadedFiles.filter(f => f.kind === currentUploadFilter);
+      if (!list.length) {
+        container.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding:12px 6px;">No files found in this category.</div>';
+        return;
+      }
+      list.forEach(f => {
+        const card = document.createElement('div');
+        card.className = 'audio-item-card';
+        const sizeMb = (f.size / 1024 / 1024).toFixed(2);
+        let iconClass = 'fa-file';
+        if (f.kind === 'audio') iconClass = 'fa-music';
+        else if (f.kind === 'image') iconClass = 'fa-image';
+        else if (f.kind === 'video') iconClass = 'fa-video';
+        else if (f.kind === 'font') iconClass = 'fa-font';
+        card.innerHTML = `
+          <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
+            <div style="width:34px; height:34px; border-radius:8px; background:rgba(255,255,255,0.06); color:var(--accent); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <i class="fa-solid ${iconClass}"></i>
+            </div>
+            <div style="min-width:0; flex:1;">
+              <div style="font-weight:600; font-size:0.86rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(f.filename)}</div>
+              <div style="font-size:0.75rem; color:var(--text-muted);">${sizeMb} MB • .${escapeHtml(f.ext)}</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:6px; flex-shrink:0;">
+            <button type="button" class="btn btn-secondary" style="padding:6px 10px; font-size:0.78rem;" onclick="copyFileUrl('${f.url}')"><i class="fa-solid fa-copy"></i> Copy URL</button>
+            <button type="button" class="btn btn-danger" style="padding:6px 10px; font-size:0.78rem;" onclick="deleteHostedFile('${f.filename}')"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function copyFileUrl(url) {
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('Copied file URL to clipboard!');
+      });
+    }
+
+    async function deleteHostedFile(filename) {
+      const confirmed = await CustomModal.confirm('Delete File', `Are you sure you want to permanently delete "${filename}" from the server?`);
+      if (!confirmed) return;
+      try {
+        const res = await fetch(`/api/uploads/${encodeURIComponent(filename)}`, { method: 'DELETE' });
+        const json = await res.json();
+        if (json.ok) {
+          showToast('File deleted successfully');
+          loadHostedAudioList();
+          loadAllUploadsList();
+        } else {
+          CustomModal.alert('Error', json.error || 'Failed to delete file');
+        }
+      } catch (e) {
+        CustomModal.alert('Error', 'Failed to delete file: ' + e);
+      }
+    }
+
+    async function uploadSelectedFile() {
+      const input = document.getElementById('fileUploadInput');
+      if (!input.files || !input.files[0]) {
+        CustomModal.alert('No File Selected', 'Please choose a file to upload first.', 'fa-solid fa-cloud-arrow-up');
+        return;
+      }
+      const formData = new FormData();
+      formData.append('file', input.files[0]);
+      try {
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const json = await res.json();
+        if (json.ok) {
+          document.getElementById('uploadResult').innerHTML = `Uploaded: <a href="${json.url}" target="_blank" style="color:var(--accent);">${json.url}</a> (${json.kind})`;
+          loadAllUploadsList();
+          loadHostedAudioList();
+          showToast('File uploaded successfully!');
+        } else {
+          CustomModal.alert('Upload Failed', json.error || 'Unknown upload error');
+        }
+      } catch (err) {
+        CustomModal.alert('Error', 'Upload error: ' + err);
+      }
+    }
+
+    const bubbleBundles = [
+      { id: 'classic', name: 'Discord Classic', tag: 'Official', desc: 'Signature Discord charcoal bubble with elastic overshoot and soap poof burst.', icon: 'fa-brands fa-discord' },
+      { id: 'cosmic', name: 'Cosmic Nebula', tag: 'Galaxy', desc: 'Deep violet aura with 3D vortex rotation and starry collapse.', icon: 'fa-solid fa-meteor' },
+      { id: 'glitch', name: 'Cyber Glitch', tag: 'Cyberpunk', desc: 'Neon cyan/pink RGB split with scanlines and digital snap.', icon: 'fa-solid fa-terminal' },
+      { id: 'jelly', name: 'Liquid Jelly', tag: 'Squishy', desc: 'Gelatin slime physics with high-viscosity squash & stretch bounce.', icon: 'fa-solid fa-droplet' },
+      { id: 'fireworks', name: 'Neon Fireworks', tag: 'Explosive', desc: 'Golden amber embers with launch rocket bloom and spark pop.', icon: 'fa-solid fa-fire-flame-curved' },
+      { id: 'phantom', name: 'Phantom Ghost', tag: 'Spectral', desc: 'Ethereal mist rise with fading levitation and ghostly smoke veil.', icon: 'fa-solid fa-ghost' },
+      { id: 'arcade', name: '8-Bit Arcade', tag: 'Retro', desc: 'Pixelated Nintendo frame steps with chiptune blink transitions.', icon: 'fa-solid fa-gamepad' },
+      { id: 'holo', name: 'Holographic Prism', tag: 'Iridescent', desc: 'Rainbow chromatic dispersion with 3D isometric crystal fold-in.', icon: 'fa-solid fa-gem' },
+      { id: 'heartbeat', name: 'Limerence Pulse', tag: 'Love', desc: 'Cardiovascular double thump pulse with romantic velvet aura.', icon: 'fa-solid fa-heart' },
+      { id: 'magnetic', name: 'Magnetic Snap', tag: 'Kinetic', desc: 'Heavy brushed titanium pull with recoil impact slam.', icon: 'fa-solid fa-magnet' },
+      { id: 'electric', name: 'Electric Storm', tag: 'Voltage', desc: 'Crackling blue lightning sparks with high-voltage zap pop.', icon: 'fa-solid fa-bolt' },
+      { id: 'foam', name: 'Soap Foam', tag: 'Bubbly', desc: 'Cluster of frosted iridescent micro-bubbles merging into one.', icon: 'fa-solid fa-soap' }
+    ];
+
+    let activeBubbleBundle = 'classic';
+    let sandboxPreviewBundle = 'classic';
+
+    function renderBubbleBundles() {
+      const grid = document.getElementById('bundlesGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      bubbleBundles.forEach(b => {
+        const card = document.createElement('div');
+        const isActive = (activeBubbleBundle === b.id);
+        card.className = `bundle-card ${isActive ? 'active-bundle' : ''}`;
+        card.innerHTML = `
+          <div class="bundle-card-header">
+            <div class="bundle-title"><i class="${b.icon}" style="color:var(--accent);"></i> ${escapeHtml(b.name)}</div>
+            <span class="bundle-badge" style="${isActive ? 'background:var(--accent); color:#09090b;' : ''}">${isActive ? 'Active on Profile' : escapeHtml(b.tag)}</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">${escapeHtml(b.desc)}</p>
+          <div class="bundle-preview-box" onclick="triggerCardPreviewPoof('${b.id}', this)" style="cursor: pointer;" data-tooltip="Click to test ${escapeHtml(b.name)} animation">
+            <div id="previewWrap_${b.id}" class="discord-bubble-wrapper bundle-${b.id}">
+              <div class="bubble-connector-dot"></div>
+              <div class="discord-thought-bubble">
+                <span>${escapeHtml(b.name)}</span>
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: auto;">
+            <button type="button" class="btn btn-secondary" style="flex: 1; padding: 8px 12px; font-size: 0.82rem;" onclick="testBundleInSandbox('${b.id}')"><i class="fa-solid fa-play"></i> Preview</button>
+            <button type="button" class="btn ${isActive ? 'btn-secondary' : 'btn-primary'}" style="flex: 1; padding: 8px 12px; font-size: 0.82rem;" onclick="selectAndApplyBundle('${b.id}')"><i class="fa-solid fa-check"></i> ${isActive ? 'Active' : 'Apply'}</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+      updateSandboxBubble();
+    }
+
+    function updateSandboxBubble() {
+      const wrap = document.getElementById('sandboxBubbleWrap');
+      const badge = document.getElementById('activeBundleBadge');
+      if (wrap) {
+        wrap.className = `discord-bubble-wrapper bundle-${sandboxPreviewBundle}`;
+      }
+      if (badge) {
+        const previewFound = bubbleBundles.find(b => b.id === sandboxPreviewBundle) || bubbleBundles[0];
+        const activeFound = bubbleBundles.find(b => b.id === activeBubbleBundle) || bubbleBundles[0];
+        badge.innerHTML = `Previewing: <b style="color:#fff;">${previewFound.name}</b> <span style="opacity:0.6; font-size:0.75rem; margin-left:6px;">(Active: ${activeFound.name})</span>`;
+      }
+    }
+
+    function triggerCardPreviewPoof(bundleId, container) {
+      const wrap = container ? container.querySelector('.discord-bubble-wrapper') : document.getElementById(`previewWrap_${bundleId}`);
+      if (!wrap) return;
+      wrap.classList.remove('pop-in');
+      wrap.classList.add('poof-out');
+      setTimeout(() => {
+        wrap.classList.remove('poof-out');
+        wrap.classList.add('pop-in');
+        setTimeout(() => {
+          wrap.classList.remove('pop-in');
+        }, 500);
+      }, 340);
+    }
+
+    function testBundleInSandbox(bundleId) {
+      sandboxPreviewBundle = bundleId;
+      updateSandboxBubble();
+      triggerSandboxPoof();
+      showToast(`Previewing ${bundleId} animation in sandbox`);
+    }
+
+    function triggerSandboxPoof() {
+      const wrap = document.getElementById('sandboxBubbleWrap');
+      if (!wrap) return;
+      wrap.classList.remove('pop-in');
+      wrap.classList.add('poof-out');
+      setTimeout(() => {
+        wrap.classList.remove('poof-out');
+        wrap.classList.add('pop-in');
+        setTimeout(() => {
+          wrap.classList.remove('pop-in');
+        }, 500);
+      }, 340);
+    }
+
+    function triggerSandboxHover() {
+      const bubble = document.getElementById('sandboxBubble');
+      if (!bubble) return;
+      bubble.style.transform = 'scale(1.1) translateY(-4px)';
+      bubble.style.boxShadow = '0 12px 30px rgba(0,0,0,0.8), 0 0 20px var(--accent-glow)';
+      setTimeout(() => {
+        bubble.style.transform = '';
+        bubble.style.boxShadow = '';
+      }, 1000);
+    }
+
+    async function selectAndApplyBundle(bundleId) {
+      activeBubbleBundle = bundleId;
+      sandboxPreviewBundle = bundleId;
+      updateSandboxBubble();
+      renderBubbleBundles();
+      await saveProfile();
+      showToast(`Applied ${bundleId} bundle to live profile!`);
+    }
+
+    async function applyCurrentSandboxBundle() {
+      activeBubbleBundle = sandboxPreviewBundle;
+      renderBubbleBundles();
+      await saveProfile();
+      showToast(`Applied ${activeBubbleBundle} to live profile!`);
+    }
+
+    async function saveProfile() {
+      const payload = getFormProfilePayload();
+      try {
+        const res = await fetch('/api/profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (json.ok) {
+          showToast('Profile changes saved successfully!');
+        } else {
+          CustomModal.alert('Save Failed', json.error || 'Could not save profile');
+        }
+      } catch (err) {
+        CustomModal.alert('Error', 'Error saving profile: ' + err);
+      }
+    }
+
+    async function uploadCursorFile(input) {
+      if (!input.files || !input.files[0]) return;
+      const formData = new FormData();
+      formData.append('file', input.files[0]);
+      try {
+        showToast('Uploading cursor image...');
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const json = await res.json();
+        if (json.ok) {
+          document.getElementById('inpCustomCursorUrl').value = json.url;
+          showToast('Custom cursor uploaded and selected!');
+        } else {
+          CustomModal.alert('Upload Failed', json.error || 'Could not upload cursor file');
+        }
+      } catch (err) {
+        CustomModal.alert('Error', 'Upload error: ' + err);
+      }
+    }
+
+    const cursorPresets = {
+      crosshair: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="8" fill="none" stroke="%23ef4444" stroke-width="2"/><circle cx="16" cy="16" r="2" fill="%23ef4444"/><line x1="16" y1="2" x2="16" y2="9" stroke="%23ef4444" stroke-width="2"/><line x1="16" y1="23" x2="16" y2="30" stroke="%23ef4444" stroke-width="2"/><line x1="2" y1="16" x2="9" y2="16" stroke="%23ef4444" stroke-width="2"/><line x1="23" y1="16" x2="30" y2="16" stroke="%23ef4444" stroke-width="2"/></svg>',
+      katana: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="%23a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="m16 16 4 4"/><path d="m19 21 2-2"/></svg>',
+      cyber: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M4 12V4h8M20 4h8v8M28 20v8h-8M12 28H4v-8" fill="none" stroke="%2338bdf8" stroke-width="2.5" stroke-linecap="round"/><circle cx="16" cy="16" r="3" fill="%2338bdf8"/></svg>',
+      star: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="%23fbbf24" stroke="%23d97706" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+      default: ''
+    };
+
+    function setCursorPreset(type) {
+      if (type === 'default') {
+        document.getElementById('inpCustomCursorUrl').value = '';
+        showToast('Default glowing ring cursor selected');
+      } else if (cursorPresets[type]) {
+        document.getElementById('inpCustomCursorUrl').value = cursorPresets[type];
+        showToast(`Selected ${type} cursor preset!`);
+      }
+    }
+
+    function toggleStatusInputs() {
+      const useDiscord = document.getElementById('inpUseDiscordStatus').checked;
+      const groupCustom = document.getElementById('groupCustomStatus');
+      const groupEmoji = document.getElementById('groupStatusEmoji');
+      const preview = document.getElementById('discordStatusLivePreview');
+      if (useDiscord) {
+        groupCustom.style.opacity = '0.5';
+        groupEmoji.style.opacity = '0.5';
+        preview.style.display = 'block';
+      } else {
+        groupCustom.style.opacity = '1';
+        groupEmoji.style.opacity = '1';
+        preview.style.display = 'none';
+      }
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    checkAuth();
+  </script>
+</body>
+</html>
